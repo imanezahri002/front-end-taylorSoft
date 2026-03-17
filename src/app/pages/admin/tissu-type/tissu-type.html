@@ -1,0 +1,139 @@
+<app-dashboard-layout title="Gestion des Types de Tissu">
+
+	<div class="mb-8 flex justify-between items-center">
+		<div>
+			<h2 class="text-2xl font-bold text-gray-900">Types de Tissu</h2>
+			<p class="text-sm text-gray-400 mt-1">Creez et gerez les types de tissu de votre catalogue</p>
+		</div>
+	</div>
+
+	@if (error()) {
+		<div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+			{{ error() }}
+		</div>
+	}
+
+	<div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+		<div class="p-8 border-b border-gray-50 bg-stone-50/50">
+			<form [formGroup]="tissuTypeForm" (ngSubmit)="addTissuType()">
+				<div class="grid gap-4 grid-cols-1 md:grid-cols-3 items-end">
+					<div>
+						<label for="nom" class="block text-sm font-medium text-gray-700 mb-2">
+							Nom <span class="text-red-500">*</span>
+						</label>
+						<div class="h-10 flex items-center">
+							<input
+								id="nom"
+								type="text"
+								formControlName="nom"
+								placeholder="Nom du type de tissu"
+								class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+							/>
+						</div>
+						<div class="h-5">
+							@if (tissuTypeForm.get('nom')?.touched && tissuTypeForm.get('nom')?.hasError('required')) {
+								<p class="text-xs text-red-500">nom est requis</p>
+							}
+							@if (tissuTypeForm.get('nom')?.touched && tissuTypeForm.get('nom')?.hasError('minlength')) {
+								<p class="text-xs text-red-500">nom doit contenir au moins 3 caracteres</p>
+							}
+						</div>
+					</div>
+
+					<div>
+						<label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+							Description
+						</label>
+						<div class="h-10 flex items-center">
+							<input
+								id="description"
+								type="text"
+								formControlName="description"
+								placeholder="Description courte"
+								class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+							/>
+						</div>
+						<div class="h-5">
+							@if (tissuTypeForm.get('description')?.touched && tissuTypeForm.get('description')?.hasError('maxlength')) {
+								<p class="text-xs text-red-500">description ne doit pas depasser 500 caracteres</p>
+							}
+						</div>
+					</div>
+
+					<div>
+						<div class="h-10 flex items-center">
+							<button
+								type="submit"
+								[disabled]="tissuTypeForm.invalid || isSubmitting()"
+								class="w-full rounded-xl bg-stone-900 hover:bg-black text-white font-bold py-2.5 px-6 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+							>
+								@if (isSubmitting()) {
+									<span class="inline-block animate-spin">o</span> Ajout...
+								} @else {
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+									</svg>
+									Ajouter
+								}
+							</button>
+						</div>
+						<div class="h-5"></div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<div class="overflow-x-auto">
+			@if (isLoading()) {
+				<div class="flex justify-center items-center py-20">
+					<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+				</div>
+			} @else if (tissuTypes().length === 0) {
+				<div class="text-center py-12 text-gray-500 p-8">
+					<p class="text-lg font-medium">Aucun type de tissu trouve</p>
+					<p class="text-sm">Creez votre premier type de tissu avec le formulaire ci-dessus</p>
+				</div>
+			} @else {
+				<table class="w-full text-left">
+					<thead class="bg-white border-b border-gray-100">
+						<tr>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Nom</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Description</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-50">
+						@for (type of tissuTypes(); track type.id) {
+							<tr class="hover:bg-stone-50 transition-colors group">
+								<td class="px-8 py-4">
+									<div class="font-bold text-gray-900">{{ type.nom }}</div>
+									<div class="text-xs text-gray-400">ID: {{ type.id }}</div>
+								</td>
+								<td class="px-8 py-4 text-sm text-gray-600">
+									@if (type.description) {
+										<span class="truncate block max-w-xs">{{ type.description }}</span>
+									} @else {
+										<span class="text-gray-400 italic">-</span>
+									}
+								</td>
+								<td class="px-8 py-4 text-right">
+									<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+										<button
+											(click)="deleteTissuType(type.id, type.nom)"
+											class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+											</svg>
+										</button>
+									</div>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
+		</div>
+	</div>
+
+</app-dashboard-layout>

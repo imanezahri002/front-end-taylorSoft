@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Category } from './category';
+import { TissuTypeComponent } from './tissu-type';
 
-describe('Category', () => {
-  let component: Category;
-  let fixture: ComponentFixture<Category>;
+describe('TissuTypeComponent', () => {
+  let component: TissuTypeComponent;
+  let fixture: ComponentFixture<TissuTypeComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Category]
+      imports: [TissuTypeComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Category);
+    fixture = TestBed.createComponent(TissuTypeComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

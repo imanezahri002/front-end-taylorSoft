@@ -7,6 +7,8 @@ import { UnauthorizedComponent } from './pages/unauthorized/unauthorized.compone
 import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { Signup } from './pages/signup/signup';
 import { Users } from '../app/pages/admin/users/users';
+import { TissuTypeComponent } from '../app/pages/admin/tissu-type/tissu-type';
+
 
 export const routes: Routes = [
   {
@@ -38,6 +40,16 @@ export const routes: Routes = [
   {
     path:'dashboard/categories',
     loadComponent: () => import('../app/pages/admin/category/category').then(m => m.CategoryComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'dashboard/tissus',
+    component: TissuTypeComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'dashboard/type-tissu',
+    component: TissuTypeComponent,
     canActivate: [authGuard]
   },
   {

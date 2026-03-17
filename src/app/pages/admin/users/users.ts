@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { DashboardLayoutComponent } from '../../../shared/components/dashboard-layout/dashboard-layout.component';
 import { UserService } from '../../../shared/services/user.service';
-import { UserResponse } from '../../../shared/models/user.model';
+import { UserResponse } from '../../../core/models/user.model';
 import { Page } from '../../../core/models/page.model';
 
 @Component({

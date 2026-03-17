@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DashboardLayoutComponent } from '../../../shared/components/dashboard-layout/dashboard-layout.component';
-import { CategoryService } from '../../../shared/services/category.serive';
+import { CategoryService } from '../../../shared/services/category.service';
 import { Category } from '../../../core/models/category.model';
 
 @Component({
