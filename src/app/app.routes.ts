@@ -8,6 +8,7 @@ import { NotFoundComponent } from './pages/not-found/not-found.component';
 import { Signup } from './pages/signup/signup';
 import { Users } from '../app/pages/admin/users/users';
 import { TissuTypeComponent } from '../app/pages/admin/tissu-type/tissu-type';
+import { ColorComponent } from '../app/pages/admin/color/color';
 
 
 export const routes: Routes = [
@@ -50,6 +51,11 @@ export const routes: Routes = [
   {
     path: 'dashboard/type-tissu',
     component: TissuTypeComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'dashboard/couleurs',
+    component: ColorComponent,
     canActivate: [authGuard]
   },
   {

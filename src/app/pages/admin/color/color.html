@@ -1,0 +1,204 @@
+<app-dashboard-layout title="Gestion des Couleurs">
+
+	<div class="mb-8 flex justify-between items-center">
+		<div>
+			<h2 class="text-2xl font-bold text-gray-900">Couleurs</h2>
+			<p class="text-sm text-gray-400 mt-1">Creez et gerez les couleurs de votre catalogue</p>
+		</div>
+	</div>
+
+	@if (error()) {
+		<div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+			{{ error() }}
+		</div>
+	}
+
+	<div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+		<div class="p-8 border-b border-gray-50 bg-stone-50/50">
+			<form [formGroup]="colorForm" (ngSubmit)="addColor()">
+				<div class="grid gap-4 grid-cols-1 md:grid-cols-4 items-end">
+					<div>
+						<label for="nom" class="block text-sm font-medium text-gray-700 mb-2">
+							Nom <span class="text-red-500">*</span>
+						</label>
+						<div class="h-10 flex items-center">
+							<input
+								id="nom"
+								type="text"
+								formControlName="nom"
+								placeholder="Nom de la couleur"
+								class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+							/>
+						</div>
+						<div class="h-5">
+							@if (colorForm.get('nom')?.touched && colorForm.get('nom')?.hasError('required')) {
+								<p class="text-xs text-red-500">nom est requis</p>
+							}
+							@if (colorForm.get('nom')?.touched && colorForm.get('nom')?.hasError('minlength')) {
+								<p class="text-xs text-red-500">nom doit contenir au moins 3 caracteres</p>
+							}
+						</div>
+					</div>
+
+					<div>
+						<label for="codeHex" class="block text-sm font-medium text-gray-700 mb-2">
+							Code Hex <span class="text-red-500">*</span>
+						</label>
+						<div class="h-10 flex items-center gap-2">
+							<input
+								id="codeHex"
+								type="text"
+								formControlName="codeHex"
+								placeholder="#RRGGBB"
+								class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+							/>
+							<input
+								#palettePicker
+								type="color"
+								class="sr-only"
+								[value]="getPaletteValue()"
+								(input)="onPaletteChange($event)"
+							/>
+							<button
+								type="button"
+								(click)="openPalette(palettePicker)"
+								class="h-10 w-10 rounded-xl border border-gray-200 bg-white text-gray-700 hover:text-rose-600 hover:border-rose-300 transition flex items-center justify-center"
+								aria-label="Ouvrir la palette de couleurs"
+								title="Ouvrir la palette"
+							>
+								<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21a9 9 0 100-18 9 9 0 000 18z" />
+									<circle cx="8" cy="10" r="1" fill="currentColor" stroke="none" />
+									<circle cx="11" cy="7.5" r="1" fill="currentColor" stroke="none" />
+									<circle cx="15" cy="8.5" r="1" fill="currentColor" stroke="none" />
+									<circle cx="16.5" cy="12.5" r="1" fill="currentColor" stroke="none" />
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12.5 15.5h1.2a2 2 0 100-4h-1.2a2.8 2.8 0 00-2.8 2.8 1.2 1.2 0 01-1.2 1.2 2 2 0 100 4h1.2" />
+								</svg>
+							</button>
+							@if (colorForm.get('codeHex')?.value && colorForm.get('codeHex')?.valid) {
+								<div class="w-10 h-10 rounded-lg border-2 border-gray-300" [style.backgroundColor]="colorForm.get('codeHex')?.value"></div>
+							}
+						</div>
+						<div class="h-5">
+							@if (colorForm.get('codeHex')?.touched && colorForm.get('codeHex')?.hasError('required')) {
+								<p class="text-xs text-red-500">code hex est requis</p>
+							}
+							@if (colorForm.get('codeHex')?.touched && colorForm.get('codeHex')?.hasError('pattern')) {
+								<p class="text-xs text-red-500">format #RRGGBB requis</p>
+							}
+						</div>
+					</div>
+
+					<div>
+						<label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+							Description
+						</label>
+						<div class="h-10 flex items-center">
+							<input
+								id="description"
+								type="text"
+								formControlName="description"
+								placeholder="Description courte"
+								class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+							/>
+						</div>
+						<div class="h-5">
+							@if (colorForm.get('description')?.touched && colorForm.get('description')?.hasError('maxlength')) {
+								<p class="text-xs text-red-500">description ne doit pas depasser 500 caracteres</p>
+							}
+						</div>
+					</div>
+
+					<div>
+						<div class="h-10 flex items-center">
+							<button
+								type="submit"
+								[disabled]="colorForm.invalid || isSubmitting()"
+								class="w-full rounded-xl bg-stone-900 hover:bg-black text-white font-bold py-2.5 px-6 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap"
+							>
+								@if (isSubmitting()) {
+									<span class="inline-block animate-spin">o</span> Ajout...
+								} @else {
+									<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+									</svg>
+									Ajouter
+								}
+							</button>
+						</div>
+						<div class="h-5"></div>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<div class="overflow-x-auto">
+			@if (isLoading()) {
+				<div class="flex justify-center items-center py-20">
+					<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+				</div>
+			} @else if (colors().length === 0) {
+				<div class="text-center py-12 text-gray-500 p-8">
+					<p class="text-lg font-medium">Aucune couleur trouvee</p>
+					<p class="text-sm">Creez votre premiere couleur avec le formulaire ci-dessus</p>
+				</div>
+			} @else {
+				<table class="w-full text-left">
+					<thead class="bg-white border-b border-gray-100">
+						<tr>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Nom</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Couleur</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Code Hex</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Description</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-50">
+						@for (color of colors(); track color.id) {
+							<tr class="hover:bg-stone-50 transition-colors group">
+								<td class="px-8 py-4">
+									<div class="font-bold text-gray-900">{{ color.nom }}</div>
+									<div class="text-xs text-gray-400">ID: {{ color.id }}</div>
+								</td>
+								<td class="px-8 py-4">
+									@if (color.codeHex) {
+										<div class="w-8 h-8 rounded-lg border-2 border-gray-300" [style.backgroundColor]="color.codeHex"></div>
+									} @else {
+										<span class="text-gray-400 italic">-</span>
+									}
+								</td>
+								<td class="px-8 py-4 text-sm text-gray-600">
+									@if (color.codeHex) {
+										<span class="font-mono">{{ color.codeHex }}</span>
+									} @else {
+										<span class="text-gray-400 italic">-</span>
+									}
+								</td>
+								<td class="px-8 py-4 text-sm text-gray-600">
+									@if (color.description) {
+										<span class="truncate block max-w-xs">{{ color.description }}</span>
+									} @else {
+										<span class="text-gray-400 italic">-</span>
+									}
+								</td>
+								<td class="px-8 py-4 text-right">
+									<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+										<button
+											(click)="deleteColor(color.id, color.nom)"
+											class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+											</svg>
+										</button>
+									</div>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
+		</div>
+	</div>
+
+</app-dashboard-layout>
