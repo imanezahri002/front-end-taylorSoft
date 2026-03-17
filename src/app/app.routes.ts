@@ -36,6 +36,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path:'dashboard/categories',
+    loadComponent: () => import('../app/pages/admin/category/category').then(m => m.CategoryComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'unauthorized',
     component: UnauthorizedComponent
   },

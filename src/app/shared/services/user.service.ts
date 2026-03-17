@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { Page } from '../../core/models/page.model';
 import { UserResponse } from '../models/user.model';
 
@@ -8,7 +9,7 @@ import { UserResponse } from '../models/user.model';
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:8080/api/admin/users';
+  private apiUrl = `${environment.apiUrl}/admin/users`;
 
   constructor(private http: HttpClient) {}
 
