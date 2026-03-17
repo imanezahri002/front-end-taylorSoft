@@ -1,0 +1,69 @@
+<div class="min-h-screen bg-stone-50 flex">
+
+  <aside class="w-72 bg-gray-900 text-white flex flex-col shadow-2xl z-50">
+    <div class="p-8 flex items-center gap-3">
+      <div class="w-10 h-10 bg-rose-500 rounded-xl flex items-center justify-center">
+        <span class="font-bold text-xl">T</span>
+      </div>
+      <span class="text-xl font-bold tracking-tight">Taylor<span class="text-rose-500">Soft</span></span>
+    </div>
+
+    <nav class="flex-1 px-6 space-y-2 mt-4">
+      @if (role === 'ADMIN') {
+        <div class="pt-6 pb-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Gestion Boutique</div>
+      } @else if (role === 'COUTURIER') {
+        <div class="pt-6 pb-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Mon Atelier</div>
+      } @else if (role === 'CLIENT') {
+        <div class="pt-6 pb-2 px-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Espace Client</div>
+      }
+
+      @for (item of sidebarItems; track item.route) {
+        <a [routerLink]="item.route"
+           routerLinkActive="bg-rose-500 text-white"
+           [routerLinkActiveOptions]="{exact: true}"
+           class="flex items-center gap-4 px-4 py-3 text-gray-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all">
+          @if (item.iconSvg) {
+            <div [innerHTML]="item.iconSvg"></div>
+          }
+          <span class="font-medium">{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <div class="p-6 border-t border-white/5 cursor-pointer hover:bg-white/5 transition-all" (click)="logout()">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 font-bold">
+          {{ role ? role[0] : 'U' }}
+        </div>
+        <div class="flex-1 overflow-hidden">
+          <p class="text-sm font-bold truncate">{{ role ? role : 'Utilisateur' }}</p>
+          <p class="text-xs text-gray-400 truncate mt-1">Se déconnecter</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+    <header class="h-24 bg-white border-b border-gray-100 flex items-center justify-between px-10">
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">Bienvenue, {{ role ? role : 'Utilisateur' }}</h1>
+        <p class="text-sm text-gray-400">Voici ce qu'il se passe dans votre espace aujourd'hui.</p>
+      </div>
+
+      <div class="flex items-center gap-6">
+        <button class="relative p-2 text-gray-400 hover:text-rose-500 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+          <span class="absolute top-2 right-2 w-2 h-2 bg-rose-500 rounded-full border-2 border-white"></span>
+        </button>
+        <button class="bg-stone-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-black transition-all">
+          Nouvelle Action
+        </button>
+      </div>
+    </header>
+
+    <div class="flex-1 overflow-y-auto p-10">
+      <ng-content></ng-content>
+    </div>
+  </main>
+</div>

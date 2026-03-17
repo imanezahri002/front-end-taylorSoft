@@ -1,0 +1,130 @@
+<app-dashboard-layout title="Gestion des Utilisateurs">
+
+  <div class="mb-8 flex justify-between items-center">
+    <div>
+      <h2 class="text-2xl font-bold text-gray-900">Tous les Utilisateurs</h2>
+      <p class="text-sm text-gray-400 mt-1">Gérez les comptes clients, couturiers et administrateurs.</p>
+    </div>
+    <button class="bg-stone-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-black transition-all flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+      Ajouter un utilisateur
+    </button>
+  </div>
+
+  <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+    <div class="p-8 border-b border-gray-50 flex justify-between items-center bg-stone-50/50">
+      <div class="relative w-64">
+        <input type="text" placeholder="Rechercher..." aria-label="Rechercher un utilisateur" class="w-full bg-white border border-gray-200 text-sm rounded-xl pl-10 pr-4 py-2.5 outline-none focus:border-rose-500 focus:ring-1 focus:ring-rose-500 transition-all">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400 absolute left-3 top-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+      </div>
+      <div class="flex gap-2">
+        <select class="bg-white border border-gray-200 text-sm rounded-xl px-4 py-2.5 outline-none font-medium text-gray-600">
+          <option>Tous les roles</option>
+          <option>Admin</option>
+          <option>Couturier</option>
+          <option>Client</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto min-h-[300px]">
+      @if (isLoading()) {
+        <div class="flex justify-center items-center py-20">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+        </div>
+      } @else if (error()) {
+        <div class="text-center py-10 text-red-500 font-medium">
+          {{ error() }}
+        </div>
+      } @else {
+        <table class="w-full text-left">
+          <thead class="bg-white border-b border-gray-100">
+            <tr>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Utilisateur</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">R�le</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Statut</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">T�l�phone</th>
+              <th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @for (user of usersPage()?.content; track user.id) {
+              <tr class="hover:bg-stone-50 transition-colors group">
+                <td class="px-8 py-4">
+                  <div class="flex items-center gap-4">
+                    <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center font-bold text-gray-500">
+                      {{ user.nom ? user.nom[0].toUpperCase() : 'U' }}
+                    </div>
+                    <div>
+                      <div class="font-bold text-gray-900">{{ user.nom }} {{ user.prenom }}</div>
+                      <div class="text-sm text-gray-500">{{ user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-8 py-4">
+                  <span class="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-bold uppercase rounded-lg tracking-tighter">
+                    {{ user.role }}
+                  </span>
+                </td>
+                <td class="px-8 py-4">
+                  <span [class]="'px-3 py-1 text-[10px] font-bold uppercase rounded-full tracking-tighter ' + (user.statut === 'ACTIF' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-500')">
+                    {{ user.statut }}
+                  </span>
+                </td>
+                <td class="px-8 py-4 text-sm font-medium text-gray-500">{{ user.telephone || '-' }}</td>
+                <td class="px-8 py-4 text-right">
+                  <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button class="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                    </button>
+                    <button (click)="deleteUser(user.id, user.nom + ' ' + user.prenom)" class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="py-10 text-center text-gray-400 font-medium italic">
+                  Aucun utilisateur trouvé.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        @if (shouldShowPagination()) {
+          <div class="px-8 py-5 border-t border-gray-50 flex items-center justify-between">
+            <p class="text-sm text-gray-500">
+              Affichage de la page <span class="font-bold">{{ currentPage() + 1 }}</span> sur <span class="font-bold">{{ usersPage()?.totalPages }}</span>
+              (Total : {{ usersPage()?.totalElements }} utilisateurs)
+            </p>
+            <div class="flex gap-1">
+              <button [disabled]="usersPage()?.first" (click)="onPageChange(currentPage() - 1)"
+                      class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium"
+                      [class.text-gray-400]="usersPage()?.first"
+                      [class.hover:bg-gray-50]="!usersPage()?.first">
+                Précédent
+              </button>
+
+              @for (p of getPagesArray(); track p) {
+                <button (click)="onPageChange(p)"
+                        [class]="'px-3 py-1.5 rounded-lg text-sm font-bold transition-colors ' + (p === currentPage() ? 'bg-rose-500 text-white' : 'text-gray-600 hover:bg-gray-100')">
+                  {{ p + 1 }}
+                </button>
+              }
+
+              <button [disabled]="usersPage()?.last" (click)="onPageChange(currentPage() + 1)"
+                      class="px-3 py-1.5 rounded-lg border border-gray-200 text-sm font-medium"
+                      [class.text-gray-400]="usersPage()?.last"
+                      [class.hover:bg-gray-50]="!usersPage()?.last">
+                Suivant
+              </button>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  </div>
+</app-dashboard-layout>

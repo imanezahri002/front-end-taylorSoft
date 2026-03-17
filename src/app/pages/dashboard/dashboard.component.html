@@ -1,0 +1,60 @@
+<app-dashboard-layout>
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+      <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">Utilisateurs</p>
+      <h3 class="text-3xl font-bold mt-2">1,284</h3>
+      <p class="text-green-500 text-xs mt-2 font-bold">+12% ce mois</p>
+    </div>
+    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+      <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">Tissus</p>
+      <h3 class="text-3xl font-bold mt-2">42</h3>
+      <p class="text-gray-400 text-xs mt-2 italic font-medium text-rose-500">En stock</p>
+    </div>
+    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+      <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">Commandes</p>
+      <h3 class="text-3xl font-bold mt-2">156</h3>
+      <p class="text-blue-500 text-xs mt-2 font-bold">8 en cours</p>
+    </div>
+    <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-sm">
+      <p class="text-gray-400 text-sm font-bold uppercase tracking-widest">Revenus</p>
+      <h3 class="text-3xl font-bold mt-2">45k <span class="text-sm font-medium">MAD</span></h3>
+      <p class="text-green-500 text-xs mt-2 font-bold">+5.4%</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+    <div class="p-8 border-b border-gray-50 flex justify-between items-center">
+      <h2 class="text-xl font-bold">Derniers Utilisateurs</h2>
+      <button class="text-rose-500 font-bold text-sm hover:underline">Voir tout</button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left">
+        <thead class="bg-stone-50 border-b border-gray-100">
+          <tr>
+            <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Utilisateur</th>
+            <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Role</th>
+            <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Statut</th>
+            <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Dernier Achat</th>
+            <th class="px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          <tr class="hover:bg-stone-50 transition-colors">
+            <td class="px-8 py-5 flex items-center gap-3">
+              <div class="w-9 h-9 bg-gray-100 rounded-full"></div>
+              <span class="font-bold text-gray-700">Ahmed Mansouri</span>
+            </td>
+            <td class="px-8 py-5 text-sm text-gray-500 italic">Couturier</td>
+            <td class="px-8 py-5">
+              <span class="px-3 py-1 bg-green-100 text-green-600 text-[10px] font-bold uppercase rounded-full tracking-tighter">Actif</span>
+            </td>
+            <td class="px-8 py-5 text-sm font-medium text-gray-700">12 Mars 2026</td>
+            <td class="px-8 py-5">
+              <button class="text-gray-400 hover:text-rose-500 transition-colors">���</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-dashboard-layout>

@@ -1,0 +1,1224 @@
+{
+	"info": {
+		"_postman_id": "taylorsoft-complete-api-2026",
+		"name": "TaylorSoft - Complete API Collection",
+		"description": "Collection complète pour tester tous les endpoints de l'API TaylorSoft",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "01. Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@taylorsoft.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					}
+				},
+				{
+					"name": "Register - Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@taylorsoft.com\",\n    \"password\": \"password123\",\n    \"role\": \"ADMIN\",\n    \"nom\": \"Diop\",\n    \"prenom\": \"Amadou\",\n    \"telephone\": \"771234567\",\n    \"adresse\": \"Dakar, Sénégal\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register - Couturier",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"couturier@taylorsoft.com\",\n    \"password\": \"password123\",\n    \"role\": \"COUTURIER\",\n    \"nom\": \"Fall\",\n    \"prenom\": \"Fatou\",\n    \"telephone\": \"775551234\",\n    \"adresse\": \"Sandaga, Dakar\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register - Fournisseur",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"fournisseur@taylorsoft.com\",\n    \"password\": \"password123\",\n    \"role\": \"FOURNISSEUR\",\n    \"nom\": \"Ndiaye\",\n    \"prenom\": \"Moussa\",\n    \"telephone\": \"776667788\",\n    \"adresse\": \"HLM, Dakar\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Register - Client",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"client@taylorsoft.com\",\n    \"password\": \"password123\",\n    \"role\": \"CLIENT\",\n    \"nom\": \"Sarr\",\n    \"prenom\": \"Aissatou\",\n    \"telephone\": \"778889900\",\n    \"adresse\": \"Ouakam, Dakar\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/register",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "register"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "02. Categories",
+			"item": [
+				{
+					"name": "Create Categorie",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Robes\",\n    \"description\": \"Collection de robes élégantes\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/categories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "categories"]
+						}
+					}
+				},
+				{
+					"name": "Get All Categories",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/categories",
+							"host": ["{{base_url}}"],
+							"path": ["api", "categories"]
+						}
+					}
+				},
+				{
+					"name": "Get Categorie By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/categories/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "categories", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Categorie",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Robes Premium\",\n    \"description\": \"Collection de robes élégantes et luxueuses\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/categories/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "categories", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Categorie",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/categories/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "categories", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "03. Couleurs",
+			"item": [
+				{
+					"name": "Create Couleur",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Rouge\",\n    \"codeHexa\": \"#FF0000\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/couleur",
+							"host": ["{{base_url}}"],
+							"path": ["api", "couleur"]
+						}
+					}
+				},
+				{
+					"name": "Get All Couleurs",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/couleur",
+							"host": ["{{base_url}}"],
+							"path": ["api", "couleur"]
+						}
+					}
+				},
+				{
+					"name": "Get Couleur By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/couleur/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "couleur", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Couleur",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Rouge Bordeaux\",\n    \"codeHexa\": \"#800020\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/couleur/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "couleur", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Couleur",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/couleur/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "couleur", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "04. Type Tissu",
+			"item": [
+				{
+					"name": "Create Type Tissu",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Coton\",\n    \"description\": \"Tissu en coton naturel\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/type-tissu",
+							"host": ["{{base_url}}"],
+							"path": ["api", "type-tissu"]
+						}
+					}
+				},
+				{
+					"name": "Get All Type Tissu",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/type-tissu",
+							"host": ["{{base_url}}"],
+							"path": ["api", "type-tissu"]
+						}
+					}
+				},
+				{
+					"name": "Get Type Tissu By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/type-tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "type-tissu", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Type Tissu",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Coton Bio\",\n    \"description\": \"Tissu en coton biologique de haute qualité\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/type-tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "type-tissu", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Type Tissu",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/type-tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "type-tissu", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "05. Tissu",
+			"item": [
+				{
+					"name": "Create Tissu",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reference\": \"COT-001\",\n    \"nom\": \"Coton Premium\",\n    \"largeur\": 150.0,\n    \"active\": true,\n    \"typeTissuId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tissu",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu"]
+						}
+					}
+				},
+				{
+					"name": "Get All Tissus",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu"]
+						}
+					}
+				},
+				{
+					"name": "Get Tissu By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Tissu",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"reference\": \"COT-001-V2\",\n    \"nom\": \"Coton Premium Deluxe\",\n    \"largeur\": 160.0,\n    \"active\": true,\n    \"typeTissuId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Tissu",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "06. Tissu Color",
+			"item": [
+				{
+					"name": "Create Tissu Color",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tissuId\": 1,\n    \"couleurId\": 1,\n    \"prixUnitaire\": 2500.0,\n    \"unite\": \"METRE\",\n    \"active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color"]
+						}
+					}
+				},
+				{
+					"name": "Get All Tissu Colors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color"]
+						}
+					}
+				},
+				{
+					"name": "Get Tissu Color By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Tissu Colors By Tissu ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color/tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color", "tissu", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Tissu Colors By Couleur ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color/couleur/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color", "couleur", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Active Tissu Colors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color/active",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color", "active"]
+						}
+					}
+				},
+				{
+					"name": "Update Tissu Color",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"tissuId\": 1,\n    \"couleurId\": 1,\n    \"prixUnitaire\": 3000.0,\n    \"unite\": \"METRE\",\n    \"active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Tissu Color",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/tissu-color/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tissu-color", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "07. Model",
+			"item": [
+				{
+					"name": "Create Model",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Robe Élégante\",\n    \"description\": \"Robe élégante pour soirées\",\n    \"categorieId\": 1,\n    \"tissuId\": 1,\n    \"couturierId\": 2,\n    \"prixBase\": 15000.0,\n    \"active\": true,\n    \"couleurIds\": [1],\n    \"photoUrls\": [\"https://example.com/photo1.jpg\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/models",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models"]
+						}
+					}
+				},
+				{
+					"name": "Get All Models",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/models",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models"]
+						}
+					}
+				},
+				{
+					"name": "Get Model By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/models/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Models By Tissu ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/models/tissu/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models", "tissu", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Models By Couturier ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/models/couturier/2",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models", "couturier", "2"]
+						}
+					}
+				},
+				{
+					"name": "Get Active Models",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/models/active",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models", "active"]
+						}
+					}
+				},
+				{
+					"name": "Update Model",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"nom\": \"Robe Élégante Premium\",\n    \"description\": \"Robe élégante et luxueuse pour soirées\",\n    \"categorieId\": 1,\n    \"tissuId\": 1,\n    \"couturierId\": 2,\n    \"prixBase\": 18000.0,\n    \"active\": true,\n    \"couleurIds\": [1],\n    \"photoUrls\": [\"https://example.com/photo1.jpg\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/models/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Model",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/models/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "models", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "08. Mesure",
+			"item": [
+				{
+					"name": "Create Mesure",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clientId\": 5,\n    \"epaule\": 42.0,\n    \"poitrine\": 95.0,\n    \"taille\": 75.0,\n    \"hanche\": 100.0,\n    \"longueurBras\": 58.0,\n    \"tourBras\": 28.0,\n    \"longueurRobe\": 110.0,\n    \"longueurPantalon\": 105.0,\n    \"entrejambe\": 78.0,\n    \"tourCou\": 38.0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/mesures",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mesures"]
+						}
+					}
+				},
+				{
+					"name": "Get All Mesures",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mesures",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mesures"]
+						}
+					}
+				},
+				{
+					"name": "Get Mesure By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mesures/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mesures", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Mesure By Client ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mesures/client/5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mesures", "client", "5"]
+						}
+					}
+				},
+				{
+					"name": "Update Mesure",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clientId\": 5,\n    \"epaule\": 43.0,\n    \"poitrine\": 96.0,\n    \"taille\": 76.0,\n    \"hanche\": 101.0,\n    \"longueurBras\": 59.0,\n    \"tourBras\": 29.0,\n    \"longueurRobe\": 112.0,\n    \"longueurPantalon\": 106.0,\n    \"entrejambe\": 79.0,\n    \"tourCou\": 39.0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/mesures/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mesures", "1"]
+						}
+					}
+				},
+				{
+					"name": "Delete Mesure",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/mesures/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "mesures", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "09. Commande Client",
+			"item": [
+				{
+					"name": "Create Commande Client",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clientId\": 5,\n    \"statut\": \"EN_ATTENTE\",\n    \"items\": [\n        {\n            \"modelColorId\": 1,\n            \"quantite\": 2.0,\n            \"prixUnitaire\": 15000.0\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/commande-client",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client"]
+						}
+					}
+				},
+				{
+					"name": "Get All Commandes Client",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client"]
+						}
+					}
+				},
+				{
+					"name": "Get Commande Client By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Commandes By Client ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/client/5",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "client", "5"]
+						}
+					}
+				},
+				{
+					"name": "Get Commandes By Statut - EN_ATTENTE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/statut/EN_ATTENTE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "statut", "EN_ATTENTE"]
+						}
+					}
+				},
+				{
+					"name": "Get Commandes By Statut - EN_COURS",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/statut/EN_COURS",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "statut", "EN_COURS"]
+						}
+					}
+				},
+				{
+					"name": "Get Commandes By Statut - LIVREE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/statut/LIVREE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "statut", "LIVREE"]
+						}
+					}
+				},
+				{
+					"name": "Update Statut - EN_COURS",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/1/statut?statut=EN_COURS",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "1", "statut"],
+							"query": [{"key": "statut", "value": "EN_COURS"}]
+						}
+					}
+				},
+				{
+					"name": "Update Statut - LIVREE",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/1/statut?statut=LIVREE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "1", "statut"],
+							"query": [{"key": "statut", "value": "LIVREE"}]
+						}
+					}
+				},
+				{
+					"name": "Delete Commande Client",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/commande-client/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "commande-client", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "10. Coutourier Order",
+			"item": [
+				{
+					"name": "Create Coutourier Order",
+					"request": {
+						"method": "POST",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"couturierId\": 2,\n    \"fournisseurId\": 3,\n    \"tissuColorId\": 1,\n    \"quantite\": 50.0,\n    \"prixUnitaire\": 2500.0,\n    \"status\": \"EN_ATTENTE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders"]
+						}
+					}
+				},
+				{
+					"name": "Get All Coutourier Orders",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders"]
+						}
+					}
+				},
+				{
+					"name": "Get Coutourier Order By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Orders By Couturier ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/coutourier/2",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "coutourier", "2"]
+						}
+					}
+				},
+				{
+					"name": "Get Orders By Fournisseur ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/fournisseur/3",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "fournisseur", "3"]
+						}
+					}
+				},
+				{
+					"name": "Get Orders By Status - EN_ATTENTE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/status/EN_ATTENTE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "status", "EN_ATTENTE"]
+						}
+					}
+				},
+				{
+					"name": "Get Orders By Status - VALIDEE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/status/VALIDEE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "status", "VALIDEE"]
+						}
+					}
+				},
+				{
+					"name": "Get Orders By Status - LIVREE",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/status/LIVREE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "status", "LIVREE"]
+						}
+					}
+				},
+				{
+					"name": "Update Coutourier Order",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{"key": "Content-Type", "value": "application/json"},
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"couturierId\": 2,\n    \"fournisseurId\": 3,\n    \"tissuColorId\": 1,\n    \"quantite\": 60.0,\n    \"prixUnitaire\": 2400.0,\n    \"status\": \"EN_ATTENTE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "1"]
+						}
+					}
+				},
+				{
+					"name": "Update Order Status - VALIDEE",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/1/status?status=VALIDEE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "1", "status"],
+							"query": [{"key": "status", "value": "VALIDEE"}]
+						}
+					}
+				},
+				{
+					"name": "Update Order Status - LIVREE",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/1/status?status=LIVREE",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "1", "status"],
+							"query": [{"key": "status", "value": "LIVREE"}]
+						}
+					}
+				},
+				{
+					"name": "Delete Coutourier Order",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/coutourier-orders/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "coutourier-orders", "1"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "11. Stock",
+			"item": [
+				{
+					"name": "Get All Stocks",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stocks",
+							"host": ["{{base_url}}"],
+							"path": ["api", "stocks"]
+						}
+					}
+				},
+				{
+					"name": "Get Stock By ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stocks/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "stocks", "1"]
+						}
+					}
+				},
+				{
+					"name": "Get Stocks By Couturier ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stocks/coutourier/2",
+							"host": ["{{base_url}}"],
+							"path": ["api", "stocks", "coutourier", "2"]
+						}
+					}
+				},
+				{
+					"name": "Get Stocks By Tissu Color ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{"key": "Authorization", "value": "Bearer {{token}}"}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/stocks/tissu-color/1",
+							"host": ["{{base_url}}"],
+							"path": ["api", "stocks", "tissu-color", "1"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+

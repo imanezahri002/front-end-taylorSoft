@@ -8,5 +8,5 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.css'
 })
 export class App {
-  protected readonly title = signal('front-end-TaylorSoft');
+  protected readonly title = signal('TaylorSoft');
 }
