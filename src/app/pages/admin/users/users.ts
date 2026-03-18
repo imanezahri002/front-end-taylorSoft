@@ -1,14 +1,15 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DashboardLayoutComponent } from '../../../shared/components/dashboard-layout/dashboard-layout.component';
 import { UserService } from '../../../shared/services/user.service';
-import { UserResponse } from '../../../core/models/user.model';
+import { UserRequest, UserResponse } from '../../../core/models/user.model';
 import { Page } from '../../../core/models/page.model';
 
 @Component({
   selector: 'app-users',
   standalone: true,
-  imports: [CommonModule, DashboardLayoutComponent],
+  imports: [CommonModule, ReactiveFormsModule, DashboardLayoutComponent],
   templateUrl: './users.html',
   styleUrl: './users.css',
 })
@@ -19,8 +20,26 @@ export class Users implements OnInit {
   readonly pageSize = 10;
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
+  isCreating = signal<boolean>(false);
+  showCreateForm = signal<boolean>(false);
 
-  constructor(private userService: UserService) {}
+  createUserForm: FormGroup;
+
+  constructor(
+    private userService: UserService,
+    private fb: FormBuilder
+  ) {
+    this.createUserForm = this.fb.group({
+      nom: ['', [Validators.required, Validators.minLength(2)]],
+      prenom: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      role: ['CLIENT', [Validators.required]],
+      statut: ['ACTIF', [Validators.required]],
+      telephone: [''],
+      adresse: [''],
+    });
+  }
 
   ngOnInit(): void {
     this.loadUsers();
@@ -80,5 +99,72 @@ export class Users implements OnInit {
         }
       });
     }
+  }
+
+  openCreateUserForm(): void {
+    this.error.set(null);
+    this.showCreateForm.set(true);
+  }
+
+  cancelCreateUser(): void {
+    this.showCreateForm.set(false);
+    this.createUserForm.reset({
+      nom: '',
+      prenom: '',
+      email: '',
+      password: '',
+      role: 'CLIENT',
+      statut: 'ACTIF',
+      telephone: '',
+      adresse: '',
+    });
+  }
+
+  createUser(): void {
+    if (this.createUserForm.invalid) {
+      this.createUserForm.markAllAsTouched();
+      return;
+    }
+
+    this.isCreating.set(true);
+    this.error.set(null);
+
+    const payload: UserRequest = this.createUserForm.value as UserRequest;
+
+    this.userService.createUser(payload).subscribe({
+      next: () => {
+        this.isCreating.set(false);
+        this.cancelCreateUser();
+        this.loadUsers(0);
+      },
+      error: (err: any) => {
+        this.isCreating.set(false);
+        const apiMessage = err?.error?.message;
+        this.error.set(apiMessage || "Erreur lors de la creation de l'utilisateur.");
+      }
+    });
+  }
+
+  getCreateFormError(fieldName: string): string | null {
+    const control = this.createUserForm.get(fieldName);
+
+    if (!control || !control.touched) {
+      return null;
+    }
+
+    if (control.hasError('required')) {
+      return `${fieldName} est requis`;
+    }
+    if (control.hasError('email')) {
+      return 'Email invalide';
+    }
+    if (control.hasError('minlength')) {
+      if (fieldName === 'password') {
+        return 'password doit contenir au moins 6 caracteres';
+      }
+      return `${fieldName} doit contenir au moins 2 caracteres`;
+    }
+
+    return null;
   }
 }

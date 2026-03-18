@@ -21,3 +21,15 @@ export interface UserResponse {
     adresse?: string;
     userType?: string;
 }
+
+  export interface UserRequest {
+    id?: number;
+    email: string;
+    password: string;
+    role: string;
+    statut?: string;
+    nom: string;
+    prenom: string;
+    telephone?: string;
+    adresse?: string;
+  }

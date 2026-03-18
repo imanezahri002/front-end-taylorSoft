@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Page } from '../../core/models/page.model';
-import { UserResponse } from '../../core/models/user.model';
+import { UserRequest, UserResponse } from '../../core/models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -25,6 +25,13 @@ export class UserService {
    */
   getUserById(id: number): Observable<UserResponse> {
     return this.http.get<UserResponse>(`${this.apiUrl}/${id}`);
+  }
+
+  /**
+   * Create a new user
+   */
+  createUser(payload: UserRequest): Observable<UserResponse> {
+    return this.http.post<UserResponse>(this.apiUrl, payload);
   }
 
   /**
