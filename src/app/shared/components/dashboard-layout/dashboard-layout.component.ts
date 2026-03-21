@@ -19,7 +19,7 @@ interface SidebarItem {
 })
 export class DashboardLayoutComponent implements OnInit {
   @Input() title = 'Tableau de bord';
-  
+
   sidebarItems: SidebarItem[] = [];
 
   constructor(
@@ -32,7 +32,21 @@ export class DashboardLayoutComponent implements OnInit {
   }
 
   get role(): string | null {
-    return this.authService.getUserRole();
+    const storedRole = this.authService.getUserRole();
+    if (!storedRole) {
+      return null;
+    }
+
+    const upperRole = storedRole.trim().toUpperCase();
+    const roleWithoutPrefix = upperRole.startsWith('ROLE_')
+      ? upperRole.substring(5)
+      : upperRole;
+
+    if (roleWithoutPrefix === 'COUTOURIER') {
+      return 'COUTURIER';
+    }
+
+    return roleWithoutPrefix;
   }
 
   private getSidebarItems(): SidebarItem[] {

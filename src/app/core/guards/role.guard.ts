@@ -6,7 +6,6 @@ export const roleGuard: CanActivateFn = (route, state) => {
 
   const requiredRoles = route.data['roles'] as string[];
 
-  // TODO: Replace with your actual role checking logic
   const userRole = localStorage.getItem('userRole');
 
   if (!userRole || !requiredRoles.includes(userRole)) {

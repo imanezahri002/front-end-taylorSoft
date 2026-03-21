@@ -35,8 +35,13 @@ export class LoginComponent {
 
         // Stocker le token et le rôle pour les guards/interceptors
         localStorage.setItem('token', response.token);
-        if (response.role) {
-          localStorage.setItem('userRole', response.role.toString());
+        const apiRole = (response.role ?? '').toString().trim().toUpperCase();
+        let roleToStore = apiRole.startsWith('ROLE_') ? apiRole.substring(5) : apiRole;
+        if (roleToStore === 'COUTOURIER') {
+          roleToStore = 'COUTURIER';
+        }
+        if (roleToStore) {
+          localStorage.setItem('userRole', roleToStore);
         }
 
         this.router.navigate(['/dashboard']);
