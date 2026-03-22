@@ -1,0 +1,167 @@
+<app-dashboard-layout title="Gestion des Tissus">
+	<div class="mb-8 flex justify-between items-center">
+		<div>
+			<h2 class="text-2xl font-bold text-gray-900">Gestion des Tissus</h2>
+			<p class="text-sm text-gray-400 mt-1">Admin et couturier peuvent gerer les tissus selon leur type.</p>
+		</div>
+	</div>
+
+	@if (error()) {
+		<div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
+			{{ error() }}
+		</div>
+	}
+
+	<div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
+		<div class="p-8 border-b border-gray-50 bg-stone-50/50">
+			<form [formGroup]="tissuForm" (ngSubmit)="submitTissu()">
+				<div class="grid gap-4 grid-cols-1 md:grid-cols-5 items-end">
+					<div>
+						<label for="reference" class="block text-sm font-medium text-gray-700 mb-2">Reference *</label>
+						<input
+							id="reference"
+							type="text"
+							formControlName="reference"
+							placeholder="REF-001"
+							class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+						/>
+					</div>
+
+					<div>
+						<label for="nom" class="block text-sm font-medium text-gray-700 mb-2">Nom *</label>
+						<input
+							id="nom"
+							type="text"
+							formControlName="nom"
+							placeholder="Coton premium"
+							class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+						/>
+					</div>
+
+					<div>
+						<label for="largeur" class="block text-sm font-medium text-gray-700 mb-2">Largeur (cm)</label>
+						<input
+							id="largeur"
+							type="number"
+							formControlName="largeur"
+							placeholder="150"
+							class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+						/>
+					</div>
+
+					<div>
+						<label for="typeTissuId" class="block text-sm font-medium text-gray-700 mb-2">Type de tissu *</label>
+						<select
+							id="typeTissuId"
+							formControlName="typeTissuId"
+							class="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
+						>
+							<option [ngValue]="null">Selectionner un type</option>
+							@for (type of types(); track type.id) {
+								<option [value]="type.id">{{ type.nom }}</option>
+							}
+						</select>
+					</div>
+
+					<div class="flex items-center gap-2">
+						@if (editingTissuId()) {
+							<button
+								type="button"
+								(click)="cancelEdit()"
+								class="w-full rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-4 transition"
+							>
+								Annuler
+							</button>
+						}
+						<button
+							type="submit"
+							[disabled]="tissuForm.invalid || isSubmitting()"
+							class="w-full rounded-xl bg-stone-900 hover:bg-black text-white font-bold py-2.5 px-6 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+						>
+							@if (isSubmitting()) {
+								Enregistrement...
+							} @else {
+								{{ editingTissuId() ? 'Modifier' : 'Ajouter' }}
+							}
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+
+		<div class="overflow-x-auto">
+			@if (isLoading()) {
+				<div class="flex justify-center items-center py-20">
+					<div class="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-500"></div>
+				</div>
+			} @else if (tissus().length === 0) {
+				<div class="text-center py-12 text-gray-500 p-8">
+					<p class="text-lg font-medium">Aucun tissu trouve</p>
+					<p class="text-sm">Ajoutez votre premier tissu en choisissant son type.</p>
+				</div>
+			} @else {
+				<table class="w-full text-left">
+					<thead class="bg-white border-b border-gray-100">
+						<tr>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Reference</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Nom</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Largeur</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Statut</th>
+							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">Actions</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-gray-50">
+						@for (tissu of tissus(); track tissu.id) {
+							<tr class="hover:bg-stone-50 transition-colors group">
+								<td class="px-8 py-4 font-mono text-xs text-gray-700">{{ tissu.reference }}</td>
+								<td class="px-8 py-4 font-bold text-gray-900">{{ tissu.nom }}</td>
+								<td class="px-8 py-4 text-sm text-gray-700">
+									{{ tissu.typeTissuNom || getTypeName(tissu.typeTissuId) }}
+								</td>
+								<td class="px-8 py-4 text-sm text-gray-700">{{ tissu.largeur || '-' }}</td>
+								<td class="px-8 py-4">
+									<span
+										class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
+										[class.bg-green-100]="tissu.active"
+										[class.text-green-700]="tissu.active"
+										[class.bg-gray-200]="!tissu.active"
+										[class.text-gray-700]="!tissu.active"
+									>
+										{{ tissu.active ? 'Actif' : 'Inactif' }}
+									</span>
+								</td>
+								<td class="px-8 py-4 text-right">
+									<div class="flex items-center justify-end gap-2">
+										<button
+											type="button"
+											(click)="startEdit(tissu)"
+											class="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+											aria-label="Modifier"
+											title="Modifier"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+											</svg>
+										</button>
+										<button
+											type="button"
+											(click)="deleteTissu(tissu)"
+											class="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+											aria-label="Supprimer"
+											title="Supprimer"
+										>
+											<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+											</svg>
+										</button>
+									</div>
+								</td>
+							</tr>
+						}
+					</tbody>
+				</table>
+			}
+		</div>
+	</div>
+</app-dashboard-layout>
