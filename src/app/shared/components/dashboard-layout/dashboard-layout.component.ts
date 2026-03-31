@@ -56,6 +56,7 @@ export class DashboardLayoutComponent implements OnInit {
     const colorsSvg = this.sanitizer.bypassSecurityTrustHtml(`<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>`);
     const categoriesSvg = this.sanitizer.bypassSecurityTrustHtml(`<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`);
     const tissuesSvg = this.sanitizer.bypassSecurityTrustHtml(`<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`);
+    const ordersSvg = this.sanitizer.bypassSecurityTrustHtml(`<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>`);
 
     if (this.role === 'ADMIN') {
       return [
@@ -63,13 +64,17 @@ export class DashboardLayoutComponent implements OnInit {
         { label: 'Gestion Utilisateurs', route: '/dashboard/users', iconSvg: usersSvg },
         { label: 'Gestion Couleurs', route: '/dashboard/couleurs', iconSvg: colorsSvg },
         { label: 'Gestion Catégories', route: '/dashboard/categories', iconSvg: categoriesSvg },
-        { label: 'Types de Tissu', route: '/dashboard/tissus', iconSvg: tissuesSvg }
+        { label: 'Gestion Tissus', route: '/dashboard/tissus', iconSvg: tissuesSvg },
+        { label: 'Types de Tissu', route: '/dashboard/type-tissus', iconSvg: tissuesSvg }
       ];
     }
 
     if (this.role === 'COUTURIER') {
       return [
         { label: "Mon Atelier", route: '/dashboard', iconSvg: vueEnsembleSvg },
+        { label: 'Gestion Tissus', route: '/dashboard/tissus', iconSvg: tissuesSvg },
+        { label: 'Types de Tissu', route: '/dashboard/type-tissus', iconSvg: tissuesSvg },
+        { label: 'Commandes Tissu', route: '/dashboard/order-couturier', iconSvg: ordersSvg },
         { label: 'Créations', route: '/dashboard/models', iconSvg: categoriesSvg },
         { label: 'Planning', route: '/dashboard/planning', iconSvg: tissuesSvg }
       ];
