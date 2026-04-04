@@ -27,7 +27,7 @@ export class Tissus implements OnInit {
   // Step 2: Ajouter les couleurs et images
   colorForm: FormGroup;
   colorFormMode = signal<'select' | 'new'>('select'); // Mode sélection ou création
-  selectedColorImage = signal<File | null>(null); // Image sélectionnée
+  colorImagesMap = signal<Map<number, File[]>>(new Map()); // Map: couleurId -> File[]
 
   // UI State
   currentStep = signal<WorkflowStep>('step-1');
@@ -71,7 +71,6 @@ export class Tissus implements OnInit {
 
   // Edit State
   editingTissuId = signal<number | null>(null);
-  selectedImageFiles = signal<File[]>([]); // Ancien, gardé pour compatibilité
 
   constructor(
     private tissuService: TissuService,
@@ -581,184 +580,214 @@ export class Tissus implements OnInit {
    * Ajouter un tissu-color avec une ou plusieurs couleurs existantes (JSON)
    */
   private submitColorWithExistingColor(tissuId: number, couleurIds: number[], active: boolean): void {
-    const imageFile = this.selectedColorImage();
+    const imagesMap = this.colorImagesMap();
 
-    if (!imageFile) {
-      this.error.set('Veuillez sélectionner une image.');
+    // Vérifier qu'on a au moins une image pour chaque couleur
+    const missingImages = couleurIds.filter(id => !imagesMap.has(id) || (imagesMap.get(id) || []).length === 0);
+    if (missingImages.length > 0) {
+      this.error.set('Veuillez ajouter au moins une image pour chaque couleur sélectionnée.');
       return;
     }
 
     this.isSubmitting.set(true);
     this.error.set(null);
 
-    // Convertir l'image en base64
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const base64String = e.target.result;
+    let totalRequests = 0;
+    let completedCount = 0;
+    let errorOccurred = false;
 
-      console.log('Envoi couleurs existantes avec image:', { tissuId, couleurIds, active });
+    // Calculer le nombre total de requêtes
+    couleurIds.forEach((colorId) => {
+      const imageCount = (imagesMap.get(colorId) || []).length;
+      totalRequests += imageCount;
+    });
 
-      let completedCount = 0;
-      let errorOccurred = false;
+    console.log(`Envoi ${totalRequests} couleur(s)-image(s) existantes...`);
 
-      // Créer un tissu-color pour chaque couleur sélectionnée
-      couleurIds.forEach((couleurId) => {
-        const payload = {
-          tissuId,
-          couleurId: Number(couleurId),
-          photo: base64String, // Image en base64
-          active: active ?? true,
-        };
+    // Créer un tissu-color pour chaque couleur ET chaque image sélectionnée
+    couleurIds.forEach((couleurId) => {
+      const imageFiles = imagesMap.get(couleurId) || [];
 
-        this.tissuColorService.create(payload as any).subscribe({
-          next: () => {
-            completedCount++;
-            if (completedCount === couleurIds.length && !errorOccurred) {
-              this.successMessage.set(
-                `${couleurIds.length} couleur${couleurIds.length > 1 ? 's' : ''} ajoutée${couleurIds.length > 1 ? 's' : ''} avec succès au tissu "${this.createdTissuName()}" !`
-              );
-              this.colorForm.reset();
-              this.colorForm.patchValue({ active: true });
-              this.colorFormMode.set('select');
-              this.selectedColorImage.set(null);
-              this.selectedColorIds.set([]);
-              this.colorSearchTerm.set('');
-              this.isSubmitting.set(false);
+      imageFiles.forEach((imageFile) => {
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+          const base64String = e.target.result;
 
-              setTimeout(() => {
-                this.goToStep('step-3');
-              }, 1000);
-            }
-          },
-          error: (err) => {
-            if (!errorOccurred) {
-              console.error('Erreur couleur:', err);
-              let errorMsg = 'Erreur lors de l\'ajout des couleurs.';
-              if (err.error?.fieldErrors) {
-                const fieldErrors = Object.entries(err.error.fieldErrors)
-                  .map(([field, errors]: any) => {
-                    const errorArray = Array.isArray(errors) ? errors : [errors];
-                    return `${field}: ${errorArray.join(', ')}`;
-                  })
-                  .join(' | ');
-                if (fieldErrors) errorMsg = `Validation échouée: ${fieldErrors}`;
-              }
-              this.error.set(errorMsg);
-              this.isSubmitting.set(false);
-              errorOccurred = true;
-            }
-          },
-        });
-      });
-    };
-
-    reader.onerror = () => {
-      this.error.set('Erreur lors de la lecture de l\'image.');
-      this.isSubmitting.set(false);
-    };
-
-    reader.readAsDataURL(imageFile);
-  }
-
-  /**
-   * Créer une nouvelle couleur ET l'ajouter au tissu
-   */
-  private submitColorWithNewColor(tissuId: number, nom: string, codeHex: string, active: boolean): void {
-    const imageFile = this.selectedColorImage();
-
-    if (!imageFile) {
-      this.error.set('Veuillez sélectionner une image.');
-      return;
-    }
-
-    this.isSubmitting.set(true);
-    this.error.set(null);
-
-    console.log('Création couleur + ajout au tissu:', { nom, codeHex });
-
-    const newColor: Color = {
-      nom: nom.trim(),
-      codeHex: codeHex.trim(),
-    };
-
-    // Convertir l'image en base64
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const base64String = e.target.result;
-
-      // D'abord créer la couleur
-      this.colorService.create(newColor).subscribe({
-        next: (createdColor) => {
-          if (!createdColor.id) {
-            this.error.set('Erreur : l\'ID de la couleur créée est manquant.');
-            this.isSubmitting.set(false);
-            return;
-          }
-
-          // Puis ajouter le tissu-color
           const payload = {
             tissuId,
-            couleurId: createdColor.id,
+            couleurId: Number(couleurId),
             photo: base64String, // Image en base64
             active: active ?? true,
           };
 
           this.tissuColorService.create(payload as any).subscribe({
             next: () => {
-              this.successMessage.set(
-                `Couleur "${nom}" créée et ajoutée avec succès au tissu "${this.createdTissuName()}" !`
-              );
-              this.colorForm.reset({ active: true });
-              this.colorFormMode.set('select');
-              this.colors.set([createdColor, ...this.colors()]);
-              this.selectedColorImage.set(null);
-              this.isSubmitting.set(false);
+              completedCount++;
+              if (completedCount === totalRequests && !errorOccurred) {
+                this.successMessage.set(
+                  `${totalRequests} couleur(s) × image(s) ajoutée(s) avec succès au tissu "${this.createdTissuName()}" !`
+                );
+                this.colorForm.reset();
+                this.colorForm.patchValue({ active: true });
+                this.colorFormMode.set('select');
+                this.clearAllColorImages(); // Clear all images
+                this.selectedColorIds.set([]);
+                this.colorSearchTerm.set('');
+                this.isSubmitting.set(false);
 
-              setTimeout(() => {
-                this.goToStep('step-3');
-              }, 1000);
+                setTimeout(() => {
+                  this.goToStep('step-3');
+                }, 1000);
+              }
             },
             error: (err) => {
-              console.error('Erreur tissu-color:', err);
-              let errorMsg = 'Erreur lors de l\'ajout du tissu-color.';
-              if (err.error?.fieldErrors) {
-                const fieldErrors = Object.entries(err.error.fieldErrors)
-                  .map(([field, errors]: any) => {
-                    const errorArray = Array.isArray(errors) ? errors : [errors];
-                    return `${field}: ${errorArray.join(', ')}`;
-                  })
-                  .join(' | ');
-                if (fieldErrors) errorMsg = `Validation échouée: ${fieldErrors}`;
+              if (!errorOccurred) {
+                console.error('Erreur lors de l\'ajout:', err);
+                let errorMsg = 'Erreur lors de l\'ajout des couleurs.';
+                if (err.error?.fieldErrors) {
+                  const fieldErrors = Object.entries(err.error.fieldErrors)
+                    .map(([field, errors]: any) => {
+                      const errorArray = Array.isArray(errors) ? errors : [errors];
+                      return `${field}: ${errorArray.join(', ')}`;
+                    })
+                    .join(' | ');
+                  if (fieldErrors) errorMsg = `Validation échouée: ${fieldErrors}`;
+                }
+                this.error.set(errorMsg);
+                this.isSubmitting.set(false);
+                errorOccurred = true;
               }
-              this.error.set(errorMsg);
-              this.isSubmitting.set(false);
             },
           });
-        },
-        error: (err) => {
-          console.error('Erreur création couleur:', err);
-          let errorMsg = 'Erreur lors de la création de la couleur.';
-          if (err.error?.fieldErrors) {
-            const fieldErrors = Object.entries(err.error.fieldErrors)
-              .map(([field, errors]: any) => {
-                const errorArray = Array.isArray(errors) ? errors : [errors];
-                return `${field}: ${errorArray.join(', ')}`;
-              })
-              .join(' | ');
-            if (fieldErrors) errorMsg = `Validation échouée: ${fieldErrors}`;
+        };
+
+        reader.onerror = () => {
+          if (!errorOccurred) {
+            this.error.set('Erreur lors de la lecture de l\'image.');
+            this.isSubmitting.set(false);
+            errorOccurred = true;
           }
-          this.error.set(errorMsg);
-          this.isSubmitting.set(false);
-        },
+        };
+
+        reader.readAsDataURL(imageFile);
       });
+    });
+  }
+
+  /**
+   * Créer une nouvelle couleur ET l'ajouter au tissu (avec PLUSIEURS images)
+   * Pour le mode new, on utilise la clé -1 dans la Map
+   */
+  private submitColorWithNewColor(tissuId: number, nom: string, codeHex: string, active: boolean): void {
+    const imagesMap = this.colorImagesMap();
+    const imageFiles = imagesMap.get(-1) || []; // Use -1 as temp key for new color
+
+    if (imageFiles.length === 0) {
+      this.error.set('Veuillez sélectionner au moins une image.');
+      return;
+    }
+
+    this.isSubmitting.set(true);
+    this.error.set(null);
+
+    console.log(`Création couleur + ajout au tissu avec ${imageFiles.length} image(s):`, { nom, codeHex });
+
+    const newColor: Color = {
+      nom: nom.trim(),
+      codeHex: codeHex.trim(),
     };
 
-    reader.onerror = () => {
-      this.error.set('Erreur lors de la lecture de l\'image.');
-      this.isSubmitting.set(false);
-    };
+    // D'abord créer la couleur
+    this.colorService.create(newColor).subscribe({
+      next: (createdColor) => {
+        if (!createdColor.id) {
+          this.error.set('Erreur : l\'ID de la couleur créée est manquant.');
+          this.isSubmitting.set(false);
+          return;
+        }
 
-    reader.readAsDataURL(imageFile);
+        // Puis ajouter tissu-color pour chaque image
+        let completedCount = 0;
+        let errorOccurred = false;
+
+        imageFiles.forEach((imageFile) => {
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            const base64String = e.target.result;
+
+            const payload = {
+              tissuId,
+              couleurId: createdColor.id,
+              photo: base64String, // Image en base64
+              active: active ?? true,
+            };
+
+            this.tissuColorService.create(payload as any).subscribe({
+              next: () => {
+                completedCount++;
+                if (completedCount === imageFiles.length && !errorOccurred) {
+                  this.successMessage.set(
+                    `Couleur "${nom}" créée et ajoutée avec ${imageFiles.length} image(s) au tissu "${this.createdTissuName()}" !`
+                  );
+                  this.colorForm.reset({ active: true });
+                  this.colorFormMode.set('select');
+                  this.colors.set([createdColor, ...this.colors()]);
+                  this.clearAllColorImages(); // Clear all images
+                  this.isSubmitting.set(false);
+
+                  setTimeout(() => {
+                    this.goToStep('step-3');
+                  }, 1000);
+                }
+              },
+              error: (err) => {
+                if (!errorOccurred) {
+                  console.error('Erreur tissu-color:', err);
+                  let errorMsg = 'Erreur lors de l\'ajout du tissu-color.';
+                  if (err.error?.fieldErrors) {
+                    const fieldErrors = Object.entries(err.error.fieldErrors)
+                      .map(([field, errors]: any) => {
+                        const errorArray = Array.isArray(errors) ? errors : [errors];
+                        return `${field}: ${errorArray.join(', ')}`;
+                      })
+                      .join(' | ');
+                    if (fieldErrors) errorMsg = `Validation échouée: ${fieldErrors}`;
+                  }
+                  this.error.set(errorMsg);
+                  this.isSubmitting.set(false);
+                  errorOccurred = true;
+                }
+              },
+            });
+          };
+
+          reader.onerror = () => {
+            if (!errorOccurred) {
+              this.error.set('Erreur lors de la lecture de l\'image.');
+              this.isSubmitting.set(false);
+              errorOccurred = true;
+            }
+          };
+
+          reader.readAsDataURL(imageFile);
+        });
+      },
+      error: (err) => {
+        console.error('Erreur création couleur:', err);
+        let errorMsg = 'Erreur lors de la création de la couleur.';
+        if (err.error?.fieldErrors) {
+          const fieldErrors = Object.entries(err.error.fieldErrors)
+            .map(([field, errors]: any) => {
+              const errorArray = Array.isArray(errors) ? errors : [errors];
+              return `${field}: ${errorArray.join(', ')}`;
+            })
+            .join(' | ');
+          if (fieldErrors) errorMsg = `Validation échouée: ${fieldErrors}`;
+        }
+        this.error.set(errorMsg);
+        this.isSubmitting.set(false);
+      },
+    });
   }
 
   /**
@@ -769,7 +798,7 @@ export class Tissus implements OnInit {
     // Réinitialiser le workflow
     this.createdTissuId.set(null);
     this.createdTissuName.set(null);
-    this.selectedColorImage.set(null);
+    this.clearAllColorImages(); // Clear all images
     this.successMessage.set(null);
     this.error.set(null);
     this.selectedColorIds.set([]);
@@ -796,7 +825,7 @@ export class Tissus implements OnInit {
     if (this.currentStep() === 'step-2') {
       // Si on revient à step 1, on réinitialise
       this.colorForm.reset({ active: true });
-      this.selectedColorImage.set(null);
+      this.clearAllColorImages(); // Clear all images
       this.selectedColorIds.set([]);
       this.colorSearchTerm.set('');
       this.goToStep('step-1');
@@ -806,18 +835,58 @@ export class Tissus implements OnInit {
   }
 
   /**
-   * Gestion des fichiers images
+   * Gestion des fichiers images par couleur (MULTIPLE par couleur)
    */
-  onImageSelected(event: Event): void {
+  onImageSelectedForColor(colorId: number, event: Event): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      this.selectedColorImage.set(input.files[0]);
+      const imagesMap = this.colorImagesMap();
+      const currentImages = imagesMap.get(colorId) || [];
+      // Add new files to existing images for this color
+      const newImages = [...currentImages, ...Array.from(input.files)];
+      imagesMap.set(colorId, newImages);
+      this.colorImagesMap.set(new Map(imagesMap));
+      console.log(`${newImages.length} image(s) ajoutée(s) pour la couleur ${colorId}`);
+      // Reset input to allow selecting same file again
+      input.value = '';
     }
   }
 
-  getImageFileName(): string {
-    const file = this.selectedColorImage();
-    return file ? file.name : 'Aucune image sélectionnée';
+  getImagesForColor(colorId: number): File[] {
+    return this.colorImagesMap().get(colorId) || [];
+  }
+
+  getImageCountForColor(colorId: number): number {
+    return this.getImagesForColor(colorId).length;
+  }
+
+  /**
+   * Remove a specific image for a color
+   */
+  removeImageForColor(colorId: number, imageIndex: number): void {
+    const imagesMap = this.colorImagesMap();
+    const images = imagesMap.get(colorId) || [];
+    images.splice(imageIndex, 1);
+    if (images.length > 0) {
+      imagesMap.set(colorId, images);
+    } else {
+      imagesMap.delete(colorId);
+    }
+    this.colorImagesMap.set(new Map(imagesMap));
+  }
+
+  /**
+   * Get preview URL for an image file
+   */
+  getImagePreview(file: File): string {
+    return URL.createObjectURL(file);
+  }
+
+  /**
+   * Clear all images (for cleanup)
+   */
+  clearAllColorImages(): void {
+    this.colorImagesMap.set(new Map());
   }
 
   onCouleursSelected(event: Event): void {

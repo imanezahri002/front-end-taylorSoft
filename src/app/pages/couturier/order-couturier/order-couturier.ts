@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   FormBuilder,
@@ -38,6 +38,7 @@ export class OrderCouturier implements OnInit {
   successMessage = '';
   showForm = false;
   currentUserId = 1; // À récupérer du service d'authentification
+  itemPhotos = signal<Map<number, File[]>>(new Map()); // Store files for each item index
 
   constructor() {
     this.orderForm = this.formBuilder.group({
@@ -90,6 +91,13 @@ export class OrderCouturier implements OnInit {
   }
 
   /**
+   * Get items as FormGroup[] for type safety in template
+   */
+  get itemControls(): FormGroup[] {
+    return this.items.controls as FormGroup[];
+  }
+
+  /**
    * Add a new item row
    */
   addItem() {
@@ -114,7 +122,56 @@ export class OrderCouturier implements OnInit {
   removeItem(index: number) {
     if (this.items.length > 1) {
       this.items.removeAt(index);
+      // Remove photos for this item
+      const photos = this.itemPhotos();
+      photos.delete(index);
+      this.itemPhotos.set(new Map(photos));
     }
+  }
+
+  /**
+   * Handle multiple photo uploads for an item
+   */
+  onPhotosSelected(index: number, event: any) {
+    const files = event.target.files as FileList;
+    if (files && files.length > 0) {
+      const photos = this.itemPhotos();
+      const currentPhotos = photos.get(index) || [];
+      // Add new files to existing photos
+      const newPhotos = [...currentPhotos, ...Array.from(files)];
+      photos.set(index, newPhotos);
+      this.itemPhotos.set(new Map(photos));
+      console.log(`${newPhotos.length} photo(s) ajoutée(s) pour l'article ${index}`);
+    }
+  }
+
+  /**
+   * Remove a specific photo from an item
+   */
+  removePhoto(itemIndex: number, photoIndex: number) {
+    const photos = this.itemPhotos();
+    const itemPhotos = photos.get(itemIndex) || [];
+    itemPhotos.splice(photoIndex, 1);
+    if (itemPhotos.length > 0) {
+      photos.set(itemIndex, itemPhotos);
+    } else {
+      photos.delete(itemIndex);
+    }
+    this.itemPhotos.set(new Map(photos));
+  }
+
+  /**
+   * Get photos for an item
+   */
+  getItemPhotos(index: number): File[] {
+    return this.itemPhotos().get(index) || [];
+  }
+
+  /**
+   * Get preview URL for a file
+   */
+  getPhotoPreview(file: File): string {
+    return URL.createObjectURL(file);
   }
 
   /**
