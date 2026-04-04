@@ -5,6 +5,7 @@ import { DashboardLayoutComponent } from '../../../shared/components/dashboard-l
 import { TissuType } from '../../../core/models/tissuType.model';
 import { Tissu } from '../../../core/models/tissu.model';
 import { Color } from '../../../core/models/color.model';
+import { TissuColorResponse } from '../../../core/models/tissuColorResponse.model';
 import { TissuService } from '../../../shared/services/tissu.service';
 import { TissuTypeService } from '../../../shared/services/tissu-type.service';
 import { TissuColorService } from '../../../shared/services/tissu-color.service';
@@ -39,18 +40,38 @@ export class Tissus implements OnInit {
   tissus = signal<Tissu[]>([]);
   types = signal<TissuType[]>([]);
   colors = signal<Color[]>([]);
+  tissuColors = signal<Map<number, TissuColorResponse[]>>(new Map()); // Map tissuId -> array of color responses
+
+  // New: API Response data for tissue-color display
+  tissuColorResponses = signal<TissuColorResponse[]>([]);
 
   // Color selection with chips
   selectedColorIds = signal<number[]>([]);
   colorSearchTerm = signal<string>('');
 
+  // RGB Color picker
+  showColorPicker = signal<boolean>(false);
+  rgbRed = signal<number>(0);
+  rgbGreen = signal<number>(255);
+  rgbBlue = signal<number>(0);
+
+  // Modal Image
+  showImageModal = signal<boolean>(false);
+  modalImageUrl = signal<string | null>(null);
+  modalImageTissuName = signal<string | null>(null);
+
+  // Image carousel state
+  imagesForCurrentTissu = signal<Array<{ colorName: string; imageUrl: string }>>([]);
+  currentImageIndex = signal<number>(0);
+  currentTissuIdForImages = signal<number | null>(null);
+
   // Workflow State
   createdTissuId = signal<number | null>(null);
   createdTissuName = signal<string | null>(null);
-  selectedImageFiles = signal<File[]>([]); // Ancien, gardé pour compatibilité
 
-  // Edit mode
+  // Edit State
   editingTissuId = signal<number | null>(null);
+  selectedImageFiles = signal<File[]>([]); // Ancien, gardé pour compatibilité
 
   constructor(
     private tissuService: TissuService,
@@ -84,38 +105,291 @@ export class Tissus implements OnInit {
     this.isLoading.set(true);
     this.error.set(null);
 
+    // Load types
     this.tissuTypeService.getAll().subscribe({
       next: (types) => {
         this.types.set(types);
-        this.loadTissus();
       },
       error: () => {
+        console.warn('Could not load tissue types');
         this.error.set('Impossible de charger les types de tissu.');
-        this.isLoading.set(false);
       },
     });
 
+    // Load colors
     this.colorService.getAll().subscribe({
       next: (colors) => {
         this.colors.set(colors);
       },
       error: () => {
+        console.warn('Could not load colors');
         this.error.set('Impossible de charger les couleurs.');
       },
     });
+
+    // Load tissues (most important - not dependent on types or colors)
+    this.loadTissus();
   }
 
   loadTissus(): void {
+    // Load tissues from the main API
     this.tissuService.getAll().subscribe({
-      next: (data) => {
-        this.tissus.set(data);
+      next: (tissues) => {
+        console.log('Tissues loaded:', tissues);
+        console.log('First tissue sample:', tissues[0]);
+        this.tissus.set(tissues);
         this.isLoading.set(false);
+
+        // Load tissue-color data in parallel (non-blocking)
+        this.loadTissuColorData();
       },
-      error: () => {
+      error: (err) => {
+        console.error('Error loading tissues:', err);
         this.error.set('Impossible de charger les tissus.');
         this.isLoading.set(false);
       },
     });
+  }
+
+  /**
+   * Load tissue color data separately - non-blocking
+   */
+  private loadTissuColorData(): void {
+    this.tissuColorService.getAllTissusWithCouleurs().subscribe({
+      next: (rawResponses: any) => {
+        console.log('Raw API response received:', rawResponses);
+        console.log('Response type:', Array.isArray(rawResponses) ? 'Array' : typeof rawResponses);
+
+        // Normalize responses to ensure they are in the expected format
+        let responses: TissuColorResponse[] = [];
+
+        if (Array.isArray(rawResponses)) {
+          // Case 1: Direct array of color responses
+          responses = rawResponses;
+          console.log('Response is a direct array');
+        } else if (rawResponses && typeof rawResponses === 'object') {
+          // Case 2: Might be wrapped in an object or have a different structure
+          console.warn('Response is not a direct array. Available keys:', Object.keys(rawResponses));
+          if (Array.isArray(rawResponses.data)) {
+            responses = rawResponses.data;
+            console.log('Extracted from .data property');
+          } else if (Array.isArray(rawResponses.colors)) {
+            responses = rawResponses.colors;
+            console.log('Extracted from .colors property');
+          } else if (Array.isArray(rawResponses.tissuColors)) {
+            responses = rawResponses.tissuColors;
+            console.log('Extracted from .tissuColors property');
+          } else {
+            responses = rawResponses as TissuColorResponse[];
+          }
+        }
+
+        console.log('Normalized responses count:', responses.length);
+        if (responses.length > 0) {
+          console.log('First response sample:', responses[0]);
+        }
+
+        // Enrich responses with color data if missing
+        this.enrichResponsesWithColors(responses);
+
+        // Store raw responses
+        this.tissuColorResponses.set(responses);
+
+        if (responses.length === 0) {
+          console.warn('API returned empty response - falling back to loading colors per tissue');
+          this.loadTissuColorsFallback();
+        } else {
+          // Build color map from responses
+          const colorMap = this.buildTissuColorMap(responses);
+          console.log('Built color map with size:', colorMap.size);
+          this.tissuColors.set(colorMap);
+        }
+      },
+      error: (err) => {
+        // Non-blocking - log error but don't block UI
+        console.error('Error loading tissue color data:', err);
+        console.warn('Falling back to loading colors per tissue');
+        // Set empty color map as fallback
+        this.loadTissuColorsFallback();
+      },
+    });
+  }
+
+  /**
+   * Fallback: Load colors for each tissue individually
+   */
+  private loadTissuColorsFallback(): void {
+    const tissues = this.tissus();
+    const colorMap = new Map<number, TissuColorResponse[]>();
+
+    // For each tissue, load its colors from tissu-color service
+    tissues.forEach(tissu => {
+      if (tissu.id) {
+        this.tissuColorService.getByTissuId(tissu.id).subscribe({
+          next: (tissuColors) => {
+            // Convert TissuColor[] to TissuColorResponse[] format
+            const colorResponses: TissuColorResponse[] = tissuColors.map(tc => ({
+              id: tc.id || 0,
+              photo: tc.photo,
+              active: tc.active,
+              couleurId: tc.couleurId,
+              tissuId: tc.tissuId,
+              couleur: tc.couleur,
+              tissu: tc.tissu,
+            }));
+
+            colorMap.set(tissu.id!, colorResponses);
+            this.tissuColors.set(new Map(colorMap)); // Trigger reactivity
+            console.log(`Loaded ${colorResponses.length} colors for tissue ${tissu.id}`);
+          },
+          error: (err) => {
+            console.warn(`Could not load colors for tissue ${tissu.id}:`, err);
+          },
+        });
+      }
+    });
+  }
+
+  /**
+   * Enrich responses with color data if the couleur field is missing
+   * Uses couleurId to lookup color from the loaded colors array
+   * Also triggers re-enrichment if colors load later
+   */
+  private enrichResponsesWithColors(responses: TissuColorResponse[]): void {
+    const enrichWithCurrentColors = () => {
+      const colors = this.colors();
+      let enrichmentCount = 0;
+
+      console.log('Attempting to enrich responses with colors. Available colors:', colors.length);
+
+      responses.forEach((response, idx) => {
+        // If couleur is missing but couleurId exists, lookup the color
+        if (!response.couleur && response.couleurId && colors.length > 0) {
+          const foundColor = colors.find(c => c.id === response.couleurId);
+          if (foundColor) {
+            response.couleur = foundColor;
+            enrichmentCount++;
+            console.log(`Response ${idx}: Enriched couleur from couleurId ${response.couleurId}:`, foundColor);
+          } else {
+            console.warn(`Response ${idx}: couleurId ${response.couleurId} not found in colors list`);
+          }
+        }
+      });
+
+      console.log(`Enrichment complete: ${enrichmentCount} colors enriched`);
+      return enrichmentCount;
+    };
+
+    // Try enrichment immediately
+    const enriched = enrichWithCurrentColors();
+
+    // If colors weren't available, watch for them and retry
+    if (enriched === 0 && responses.some(r => r.couleurId && !r.couleur)) {
+      console.warn('Some responses need enrichment but colors not loaded yet. Setting up delayed retry...');
+      // Retry after a short delay to allow colors to load
+      setTimeout(() => {
+        console.log('Retry: Attempting enrichment again...');
+        enrichWithCurrentColors();
+        // Rebuild color map with newly enriched data
+        const colorMap = this.buildTissuColorMap(responses);
+        this.tissuColors.set(colorMap);
+        console.log('Color map rebuilt after enrichment retry');
+      }, 500);
+    }
+  }
+
+  /**
+   * Build a map of tissu IDs to their color responses
+   * Handles different API response structures
+   */
+  private buildTissuColorMap(responses: TissuColorResponse[]): Map<number, TissuColorResponse[]> {
+    const colorMap = new Map<number, TissuColorResponse[]>();
+
+    responses.forEach(response => {
+      console.log('Processing response:', response);
+
+      // Try to get tissuId from multiple sources
+      const tissuId = response.tissuId || response.tissu?.id;
+
+      if (!tissuId) {
+        console.warn('Response without tissuId at any level:', response);
+        return; // Skip this response
+      }
+
+      if (!colorMap.has(tissuId)) {
+        colorMap.set(tissuId, []);
+      }
+      colorMap.get(tissuId)!.push(response);
+      console.log(`Added color to tissue ${tissuId}. Color info:`, {
+        colorName: response.couleur?.nom,
+        hexCode: response.couleur?.codeHex,
+        photoExists: !!response.photo,
+        active: response.active
+      });
+    });
+
+    // Enrich tissues with data from responses (e.g., prixMetre, active status)
+    this.enrichTissusFromResponses(responses);
+
+    const mapEntries = Array.from(colorMap.entries()).map(([id, colors]) => ({
+      tissuId: id,
+      colorCount: colors.length,
+      colorsPreview: colors.map(c => ({
+        name: c.couleur?.nom,
+        hex: c.couleur?.codeHex,
+        hasPhoto: !!c.photo
+      }))
+    }));
+    console.log('Final color map entries:', mapEntries);
+    return colorMap;
+  }
+
+  /**
+   * Enrich tissue data with information from color responses
+   * Searches for prixMetre in multiple locations (response.tissu or direct response)
+   */
+  private enrichTissusFromResponses(responses: TissuColorResponse[]): void {
+    const tissues = this.tissus();
+    const enrichedTissues = tissues.map(tissu => {
+      // Find responses for this tissue
+      const tissueResponses = responses.filter(r => r.tissuId === tissu.id);
+
+      if (tissueResponses.length > 0) {
+        const firstResponse = tissueResponses[0];
+
+        // Try to get prix from different locations
+        let prixMetre = tissu.prixMetre;
+        if (firstResponse.tissu?.prixMetre) {
+          prixMetre = firstResponse.tissu.prixMetre;
+          console.log(`Tissue ${tissu.id}: Found prix in response.tissu:`, prixMetre);
+        } else if ((firstResponse as any)?.prixMetre) {
+          prixMetre = (firstResponse as any).prixMetre;
+          console.log(`Tissue ${tissu.id}: Found prix in response root:`, prixMetre);
+        }
+
+        const enrichedTissu = {
+          ...tissu,
+          prixMetre: prixMetre,
+          active: firstResponse.tissu?.active !== undefined ? firstResponse.tissu.active : tissu.active,
+        };
+
+        console.log(`Tissue ${tissu.id}: Enriched with prix=${prixMetre}`);
+        return enrichedTissu;
+      }
+      return tissu;
+    });
+
+    console.log('Enriched tissues:', enrichedTissues);
+    this.tissus.set(enrichedTissues);
+  }
+
+  loadTissuColors(tissuId: number): void {
+    // This method is now handled by buildTissuColorMap
+    // Kept for backward compatibility
+  }
+
+  getTissuColors(tissuId: number): TissuColorResponse[] {
+    return this.tissuColors().get(tissuId) || [];
   }
 
   /**
@@ -147,51 +421,67 @@ export class Tissus implements OnInit {
 
     console.log('Payload envoyé:', payload); // Debug
 
-    this.tissuService.create(payload).subscribe({
-      next: (created) => {
-        if (!created.id) {
-          this.error.set('Erreur : l\'ID du tissu créé est manquant.');
+    // Check if we're editing or creating
+    const isEditing = this.editingTissuId() !== null;
+    const submitAction = isEditing
+      ? this.tissuService.update(this.editingTissuId()!, payload)
+      : this.tissuService.create(payload);
+
+    submitAction.subscribe({
+      next: (result) => {
+        if (!result.id) {
+          this.error.set('Erreur : l\'ID du tissu est manquant.');
           this.isSubmitting.set(false);
           return;
         }
 
-        // ✅ Étape 1 réussie : Stocker tissuId et passer à l'étape 2
-        this.createdTissuId.set(created.id);
-        this.createdTissuName.set(created.nom);
-        this.tissus.set([created, ...this.tissus()]);
-        this.tissuForm.reset({ active: true, typeTissuId: null });
-        this.successMessage.set(`Tissu "${created.nom}" créé avec succès ! Passons à l'ajout des couleurs.`);
-        this.isSubmitting.set(false);
+        if (isEditing) {
+          // Mode édition : mettre à jour le tableau
+          const updatedTissus = this.tissus().map((t) =>
+            t.id === this.editingTissuId() ? result : t
+          );
+          this.tissus.set(updatedTissus);
+          this.successMessage.set(`Tissu "${result.nom}" modifié avec succès !`);
 
-        // ⏭️ Passer à l'étape 2 après 1 seconde
-        setTimeout(() => {
-          this.goToStep('step-2');
-        }, 1000);
+          // Reload color data to get updated prices
+          this.loadTissuColorData();
+
+          // Set up for color editing (step-2)
+          const editedTissuId = this.editingTissuId()!;
+          this.createdTissuId.set(editedTissuId);
+          this.createdTissuName.set(result.nom);
+          this.editingTissuId.set(null);
+          this.isSubmitting.set(false);
+          this.tissuForm.reset({ active: true, typeTissuId: null });
+
+          // Pass to step-2 to edit colors (same as creation workflow)
+          setTimeout(() => {
+            this.goToStep('step-2');
+          }, 1000);
+        } else {
+          // Mode création : passer à l'étape 2
+          this.createdTissuId.set(result.id);
+          this.createdTissuName.set(result.nom);
+          this.tissus.set([result, ...this.tissus()]);
+          this.tissuForm.reset({ active: true, typeTissuId: null });
+          this.successMessage.set(`Tissu "${result.nom}" créé avec succès ! Passons à l'ajout des couleurs.`);
+          this.isSubmitting.set(false);
+
+          // ⏭️ Passer à l'étape 2 après 1 seconde
+          setTimeout(() => {
+            this.goToStep('step-2');
+          }, 1000);
+        }
       },
       error: (err) => {
-        console.error('Erreur 400:', err); // Debug complet
-        let errorMsg = 'Erreur lors de la création du tissu.';
+        console.error('Erreur:', err); // Debug complet
+        let errorMsg = isEditing ? 'Erreur lors de la modification du tissu.' : 'Erreur lors de la création du tissu.';
 
         if (err.error) {
           if (typeof err.error === 'string') {
             errorMsg = err.error;
           } else if (err.error.message) {
             errorMsg = err.error.message;
-          }
-
-          // Extraire les fieldErrors détaillés
-          if (err.error.fieldErrors && typeof err.error.fieldErrors === 'object') {
-            const fieldErrors = Object.entries(err.error.fieldErrors)
-              .map(([field, errors]: any) => {
-                const errorArray = Array.isArray(errors) ? errors : [errors];
-                return `${field}: ${errorArray.join(', ')}`;
-              })
-              .join(' | ');
-
-            if (fieldErrors) {
-              errorMsg = `Validation échouée: ${fieldErrors}`;
-              console.log('Field errors:', err.error.fieldErrors); // Debug détaillé
-            }
           }
         }
 
@@ -202,7 +492,56 @@ export class Tissus implements OnInit {
   }
 
   /**
-   * ÉTAPE 2️⃣ : Ajouter les couleurs et images
+   * Toggle the RGB color picker
+   */
+  toggleColorPicker(): void {
+    this.showColorPicker.set(!this.showColorPicker());
+  }
+
+  /**
+   * Convert RGB to Hex
+   */
+  rgbToHex(): string {
+    const r = this.rgbRed().toString(16).padStart(2, '0');
+    const g = this.rgbGreen().toString(16).padStart(2, '0');
+    const b = this.rgbBlue().toString(16).padStart(2, '0');
+    return `#${r}${g}${b}`.toUpperCase();
+  }
+
+  /**
+   * Parse Hex to RGB
+   */
+  hexToRgb(hex: string): void {
+    const match = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+    if (match) {
+      this.rgbRed.set(parseInt(match[1], 16));
+      this.rgbGreen.set(parseInt(match[2], 16));
+      this.rgbBlue.set(parseInt(match[3], 16));
+    }
+  }
+
+  /**
+   * Update RGB sliders and apply color
+   */
+  applyRgbColor(): void {
+    const hexColor = this.rgbToHex();
+    this.colorForm.patchValue({ codeHex: hexColor });
+    this.showColorPicker.set(false);
+    console.log('Color applied:', hexColor);
+  }
+
+  /**   * Handle color picker change and update the form control
+   */
+  onColorPickerChange(event: Event, mode: 'new' | 'select'): void {
+    const input = event.target as HTMLInputElement;
+    const hexValue = input.value;
+    console.log(`Color picked (${mode} mode):`, hexValue);
+
+    // Update the form control with the hex value
+    this.colorForm.patchValue({ codeHex: hexValue });
+  }
+
+  /**   * ÉTAPE 2️⃣ : Ajouter les couleurs et images
    * Envoie POST /tissu-color avec tissuId + couleurId (ou crée une couleur d'abord)
    */
   submitColor(): void {
@@ -550,5 +889,173 @@ export class Tissus implements OnInit {
   getTypeName(typeId: number): string {
     const type = this.types().find((item) => item.id === typeId);
     return type?.nom ?? 'Inconnu';
+  }
+
+  // Modal Image Methods
+  /**
+   * Open image modal for a specific tissue with carousel
+   */
+  openImageModalForTissu(tissuId: number, tissuName: string): void {
+    console.log(`Opening image modal for tissue ${tissuId} (${tissuName})`);
+
+    // Get all color responses for this tissue
+    const colorResponses = this.getTissuColors(tissuId);
+    console.log(`Found ${colorResponses.length} color responses for tissue ${tissuId}`);
+
+    // Debug: Log each response to see what's available
+    colorResponses.forEach((response, idx) => {
+      console.log(`  Response ${idx}:`, {
+        id: response.id,
+        hasPhoto: !!response.photo,
+        photoPrev: response.photo?.substring(0, 50),
+        hasCouleur: !!response.couleur,
+        couleurNom: response.couleur?.nom,
+        couleurHex: response.couleur?.codeHex,
+      });
+    });
+
+    // Build array of images with color names
+    const images = colorResponses
+      .filter(response => {
+        const hasPhoto = !!response.photo;
+        const hasCouleur = !!response.couleur;
+        if (!hasPhoto) console.log(`Skipping response - no photo`);
+        if (!hasCouleur) console.log(`Skipping response - no couleur`);
+        return hasPhoto && hasCouleur;
+      })
+      .map(response => ({
+        colorName: response.couleur?.nom || 'Couleur inconnue',
+        imageUrl: response.photo,
+      }));
+
+    console.log(`Filtered to ${images.length} images with photos and colors`, images);
+
+    if (images.length > 0) {
+      this.imagesForCurrentTissu.set(images);
+      this.currentImageIndex.set(0);
+      this.currentTissuIdForImages.set(tissuId);
+      this.modalImageTissuName.set(tissuName);
+      this.updateModalImageUrl();
+      this.showImageModal.set(true);
+      console.log(`Modal opened successfully with ${images.length} images`);
+    } else {
+      console.warn('No images found for tissue', tissuId, '- colorResponses:', colorResponses);
+      alert(`Aucune image disponible pour ce tissu. Détails:\nColors trouvées: ${colorResponses.length}\nImages valides: ${images.length}`);
+    }
+  }
+
+  /**
+   * Update the modal image URL based on current index
+   */
+  private updateModalImageUrl(): void {
+    const images = this.imagesForCurrentTissu();
+    const index = this.currentImageIndex();
+
+    if (images.length > 0 && index >= 0 && index < images.length) {
+      this.modalImageUrl.set(images[index].imageUrl);
+    }
+  }
+
+  /**
+   * Navigate to next image in carousel
+   */
+  nextImage(): void {
+    const images = this.imagesForCurrentTissu();
+    const currentIndex = this.currentImageIndex();
+
+    if (images.length > 1) {
+      const nextIndex = (currentIndex + 1) % images.length;
+      this.currentImageIndex.set(nextIndex);
+      this.updateModalImageUrl();
+    }
+  }
+
+  /**
+   * Navigate to previous image in carousel
+   */
+  previousImage(): void {
+    const images = this.imagesForCurrentTissu();
+    const currentIndex = this.currentImageIndex();
+
+    if (images.length > 1) {
+      const previousIndex = (currentIndex - 1 + images.length) % images.length;
+      this.currentImageIndex.set(previousIndex);
+      this.updateModalImageUrl();
+    }
+  }
+
+  closeImageModal(): void {
+    this.showImageModal.set(false);
+    this.modalImageUrl.set(null);
+    this.modalImageTissuName.set(null);
+    this.imagesForCurrentTissu.set([]);
+    this.currentImageIndex.set(0);
+    this.currentTissuIdForImages.set(null);
+  }
+
+  // Edit Tissu
+  editTissu(tissuId: number): void {
+    const tissu = this.tissus().find((t) => t.id === tissuId);
+    if (!tissu) {
+      console.error('Tissu not found');
+      return;
+    }
+
+    // Track the editing tissu ID
+    this.editingTissuId.set(tissuId);
+
+    // Populate the form with the tissue data
+    this.tissuForm.patchValue({
+      reference: tissu.reference,
+      nom: tissu.nom,
+      largeur: tissu.largeur,
+      prixMetre: tissu.prixMetre,
+      typeTissuId: tissu.typeTissuId,
+    });
+
+    // Scroll to the form and change step to step-1
+    this.goToStep('step-1');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Cancel Edit
+  cancelEdit(): void {
+    this.editingTissuId.set(null);
+    this.tissuForm.reset({ active: true, typeTissuId: null });
+  }
+
+  // Toggle Active Status
+  toggleActiveTissu(tissuId: number): void {
+    const tissu = this.tissus().find((t) => t.id === tissuId);
+    if (!tissu) {
+      console.error('Tissu not found');
+      return;
+    }
+
+    const updatedTissu = { ...tissu, active: !tissu.active };
+    this.isSubmitting.set(true);
+
+    this.tissuService.update(tissuId, updatedTissu).subscribe({
+      next: () => {
+        // Update the local array
+        const updatedTissus = this.tissus().map((t) =>
+          t.id === tissuId ? updatedTissu : t
+        );
+        this.tissus.set(updatedTissus);
+
+        // Show success message
+        this.successMessage.set(
+          `Tissu ${updatedTissu.active ? 'activé' : 'désactivé'} avec succès`
+        );
+        setTimeout(() => this.successMessage.set(null), 3000);
+
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        console.error('Error toggling tissu status:', err);
+        this.error.set('Erreur lors de la mise à jour du statut du tissu');
+        this.isSubmitting.set(false);
+      },
+    });
   }
 }

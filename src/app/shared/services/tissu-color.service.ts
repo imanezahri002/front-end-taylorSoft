@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {TissuColor} from '../../core/models/tissuColor.model';
+import { TissuColorResponse } from '../../core/models/tissuColorResponse.model';
 
 @Injectable({
   providedIn: 'root',
@@ -93,5 +94,13 @@ export class TissuColorService {
    */
   getActive(): Observable<TissuColor[]> {
     return this.http.get<TissuColor[]>(`${this.apiUrl}/active`);
+  }
+
+  /**
+   * Get all tissues with their colors and images
+   * Returns list of TissuColorResponse with complete tissue and color information
+   */
+  getAllTissusWithCouleurs(): Observable<TissuColorResponse[]> {
+    return this.http.get<TissuColorResponse[]>(`${this.apiUrl}/all-tissus/with-couleurs`);
   }
 }

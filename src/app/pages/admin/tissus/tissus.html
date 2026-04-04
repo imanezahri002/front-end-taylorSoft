@@ -57,7 +57,7 @@
 	@if (currentStep() === 'step-1') {
 		<div class="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">
 			<div class="p-8 border-b border-gray-50 bg-stone-50/50">
-				<h3 class="text-lg font-bold text-gray-900 mb-6">Créer un nouveau tissu</h3>
+				<h3 class="text-lg font-bold text-gray-900 mb-6">{{ editingTissuId() ? 'Modifier le tissu' : 'Créer un nouveau tissu' }}</h3>
 				<form [formGroup]="tissuForm" (ngSubmit)="submitTissu()">
 					<div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 items-end">
 						<div>
@@ -132,18 +132,28 @@
 							</div>
 						</div>
 
-						<div>
+						<div class="grid gap-2 grid-cols-1 md:grid-cols-2">
 							<button
 								type="submit"
 								[disabled]="tissuForm.invalid || isSubmitting()"
 								class="w-full rounded-xl bg-stone-900 hover:bg-black text-white font-bold py-2.5 px-6 transition disabled:bg-gray-400 disabled:cursor-not-allowed"
 							>
 								@if (isSubmitting()) {
-									Création en cours...
+									{{ editingTissuId() ? 'Modification en cours...' : 'Création en cours...' }}
 								} @else {
-									Créer le tissu →
+									{{ editingTissuId() ? 'Modifier le tissu →' : 'Créer le tissu →' }}
 								}
 							</button>
+
+							@if (editingTissuId()) {
+								<button
+									type="button"
+									(click)="cancelEdit()"
+									class="w-full rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-6 transition"
+								>
+									Annuler
+								</button>
+							}
 						</div>
 					</div>
 				</form>
@@ -301,9 +311,32 @@
 											placeholder="#00FF00"
 											class="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-gray-900 placeholder-gray-500 focus:border-rose-500 focus:ring-2 focus:ring-rose-200 outline-none transition"
 										/>
+										<!-- Color picker icon button -->
+										<div class="relative inline-block">
+											<input
+												#colorPickerInput
+												type="color"
+												[value]="colorForm.get('codeHex')?.value || '#000000'"
+												(change)="colorForm.patchValue({ codeHex: $event.target.value })"
+												class="absolute w-0 h-0 opacity-0 pointer-events-none"
+											/>
+											<button
+												type="button"
+												(click)="colorPickerInput.click()"
+												title="Choisir une couleur"
+												class="p-2 hover:bg-gray-100 rounded-lg transition flex-shrink-0"
+											>
+												<svg class="w-6 h-6 text-gray-700" fill="currentColor" viewBox="0 0 24 24">
+													<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-5.5 9c1.38 0 2.5-1.12 2.5-2.5S7.88 5.5 6.5 5.5 4 6.62 4 8s1.12 2.5 2.5 2.5zm0 9c-1.38 0-2.5-1.12-2.5-2.5h5c0 1.38-1.12 2.5-2.5 2.5zm5.5-14c1.38 0 2.5-1.12 2.5-2.5S13.88 1 12.5 1 10 2.12 10 3.5 11.12 6 12.5 6zm0 9c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zm5.5-9c1.38 0 2.5-1.12 2.5-2.5S19.88 5.5 18.5 5.5 16 6.62 16 8s1.12 2.5 2.5 2.5zm0 9c-1.38 0-2.5-1.12-2.5-2.5h5c0 1.38-1.12 2.5-2.5 2.5z" />
+												</svg>
+											</button>
+										</div>
+										<!-- Color preview square -->
 										<div
 											[style.backgroundColor]="colorForm.get('codeHex')?.value || '#cccccc'"
-											class="w-12 h-12 rounded-xl border border-gray-200 flex-shrink-0"
+											class="w-12 h-12 rounded-xl border border-gray-200 flex-shrink-0 cursor-pointer hover:shadow-md transition hover:scale-105"
+											title="Cliquer pour ouvrir le sélecteur"
+											(click)="toggleColorPicker()"
 										></div>
 									</div>
 								</div>
@@ -411,8 +444,9 @@
 								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Référence</th>
 								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Nom</th>
 								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Type</th>
-								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Largeur</th>
+								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Largeur</th>							<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Prix/m</th>								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Couleurs</th>
 								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Statut</th>
+								<th class="px-8 py-5 text-xs font-bold text-gray-400 uppercase tracking-wider">Actions</th>
 							</tr>
 						</thead>
 						<tbody class="divide-y divide-gray-50">
@@ -422,6 +456,26 @@
 									<td class="px-8 py-4 font-bold text-gray-900">{{ tissu.nom }}</td>
 									<td class="px-8 py-4 text-sm text-gray-700">{{ getTypeName(tissu.typeTissuId) }}</td>
 									<td class="px-8 py-4 text-sm text-gray-700">{{ tissu.largeur || '-' }} cm</td>
+									<!-- Price column - always show value or zero -->
+									<td class="px-8 py-4 text-sm font-semibold text-gray-900">
+									{{ tissu.prixMetre !== undefined && tissu.prixMetre !== null ? (tissu.prixMetre | number: '1.2-2') : '0.00' }} DH
+									</td>
+									<!-- Couleurs spécifiques au tissu -->
+									<td class="px-8 py-4">
+										<div class="flex gap-1.5 flex-wrap items-center">
+											@for (tissuColor of getTissuColors(tissu.id!); track tissuColor.id) {
+												<div
+													title="{{ tissuColor.couleur?.nom || 'Couleur inconnue' }}"
+													[style.backgroundColor]="tissuColor.couleur?.codeHex || '#cccccc'"
+													class="w-6 h-6 rounded border-2 border-gray-300 cursor-pointer hover:scale-110 transition shadow-sm"
+													[class.opacity-50]="!tissuColor.active"
+												></div>
+											}
+											@if (getTissuColors(tissu.id!).length === 0) {
+												<span class="text-xs text-gray-500">Aucune couleur</span>
+											}
+										</div>
+									</td>
 									<td class="px-8 py-4">
 										<span
 											class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold"
@@ -433,6 +487,50 @@
 											{{ tissu.active ? 'Actif' : 'Inactif' }}
 										</span>
 									</td>
+									<!-- Colonne Actions -->
+									<td class="px-8 py-4">
+										<div class="flex gap-2">
+											<!-- Edit button -->
+											<button
+												type="button"
+												title="Modifier"
+												(click)="editTissu(tissu.id!)"
+												class="p-2 hover:bg-blue-100 rounded-lg transition"
+												[disabled]="isSubmitting()"
+											>
+												<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+												</svg>
+											</button>
+
+											<!-- Deactivate button -->
+											<button
+												type="button"
+												[title]="tissu.active ? 'Désactiver' : 'Activer'"
+												(click)="toggleActiveTissu(tissu.id!)"
+												[class.bg-yellow-100]="!tissu.active"
+												class="p-2 hover:bg-yellow-100 rounded-lg transition"
+												[disabled]="isSubmitting()"
+											>
+												<svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 24 24">
+													<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+												</svg>
+											</button>
+
+											<!-- Image button -->
+											<button
+												type="button"
+												title="Voir les images"
+												(click)="openImageModalForTissu(tissu.id!, tissu.nom)"
+												class="p-2 hover:bg-purple-100 rounded-lg transition"
+												[disabled]="getTissuColors(tissu.id!).length === 0"
+											>
+												<svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+												</svg>
+											</button>
+										</div>
+									</td>
 								</tr>
 							}
 						</tbody>
@@ -441,4 +539,81 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Image Modal -->
+	@if (showImageModal()) {
+		<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeImageModal()">
+			<div class="bg-white rounded-2xl max-w-2xl w-full mx-4 shadow-2xl" (click)="$event.stopPropagation()">
+				<!-- Header -->
+				<div class="flex justify-between items-center p-6 border-b border-gray-100">
+					<div>
+						<h3 class="text-xl font-bold text-gray-900">Images - {{ modalImageTissuName() }}</h3>
+						@if (imagesForCurrentTissu().length > 0) {
+							<p class="text-sm text-gray-600 mt-1">{{ imagesForCurrentTissu()[currentImageIndex()].colorName }}</p>
+						}
+					</div>
+					<button
+						type="button"
+						(click)="closeImageModal()"
+						class="text-gray-500 hover:text-gray-700 transition"
+					>
+						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+						</svg>
+					</button>
+				</div>
+
+				<!-- Content with Navigation -->
+				<div class="p-6 relative bg-gray-50 flex items-center justify-center min-h-96">
+					@if (modalImageUrl()) {
+						<img [src]="modalImageUrl()" alt="{{ modalImageTissuName() }}" class="w-full rounded-lg object-cover max-h-96" />
+					} @else {
+						<div class="text-center text-gray-500">Aucune image disponible</div>
+					}
+
+					<!-- Previous button -->
+					@if (imagesForCurrentTissu().length > 1) {
+						<button
+							type="button"
+							(click)="previousImage()"
+							class="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition z-10"
+							title="Image précédente"
+						>
+							<svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+							</svg>
+						</button>
+
+						<!-- Next button -->
+						<button
+							type="button"
+							(click)="nextImage()"
+							class="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100 transition z-10"
+							title="Image suivante"
+						>
+							<svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+							</svg>
+						</button>
+					}
+				</div>
+
+				<!-- Footer with image counter -->
+				<div class="flex justify-between items-center gap-3 p-6 border-t border-gray-100">
+					@if (imagesForCurrentTissu().length > 0) {
+						<p class="text-sm text-gray-600 font-medium">
+							{{ currentImageIndex() + 1 }} / {{ imagesForCurrentTissu().length }}
+						</p>
+					}
+					<button
+						type="button"
+						(click)="closeImageModal()"
+						class="ml-auto rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 font-bold py-2.5 px-4 transition"
+					>
+						Fermer
+					</button>
+				</div>
+			</div>
+		</div>
+	}
 </app-dashboard-layout>
