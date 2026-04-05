@@ -20,6 +20,11 @@ export interface UserResponse {
     profilePicture?: string;
     adresse?: string;
     userType?: string;
+    nomEntreprise?: string;
+    registreCommerce?: string;
+    ice?: string;
+    siteWeb?: string;
+    description?: string;
 }
 
   export interface UserRequest {

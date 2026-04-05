@@ -7,7 +7,12 @@ export interface TissuColor {
   photo: string;
   active?: boolean;
   couleurId?: number;
+  couleurNom?: string;
+  couleurCodeHex?: string;
   tissuId?: number;
+  tissuReference?: string;
+  tissuNom?: string;
+  prixMetre?: number;
   couleur?: Color;
   tissu?: Tissu;
 }

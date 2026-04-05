@@ -40,4 +40,11 @@ export class UserService {
   deleteUser(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
+
+  /**
+   * Get all suppliers (FOURNISSEUR role)
+   */
+  getAllSuppliers(): Observable<UserResponse[]> {
+    return this.http.get<UserResponse[]>(`${this.apiUrl}/suppliers/all`);
+  }
 }

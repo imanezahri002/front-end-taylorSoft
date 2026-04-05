@@ -35,9 +35,15 @@ getUserRole(): string | null {
   return localStorage.getItem('userRole');
 }
 
+getUserId(): number | null {
+  const userId = localStorage.getItem('userId');
+  return userId ? parseInt(userId, 10) : null;
+}
+
 logout(): void {
   localStorage.removeItem('token');
   localStorage.removeItem('userRole');
+  localStorage.removeItem('userId');
 }
 
 }

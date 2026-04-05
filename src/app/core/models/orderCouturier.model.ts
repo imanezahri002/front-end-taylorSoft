@@ -1,5 +1,5 @@
 import { Coutourier } from './couturier.model';
-import { Fournisseur } from './fournisseur.model';
+import { FournisseurResponse } from './fournisseur.model';
 import { CoutourierOrderItem } from './orderCouturierItem.model';
 
 // CoutourierOrderRequest for API requests
@@ -33,7 +33,12 @@ export interface CoutourierOrder {
   updatedAt?: Date;
   prixTotal: number;
   coutourier: Coutourier;
-  fournisseur: Fournisseur;
+  fournisseur: FournisseurResponse;
   items: CoutourierOrderItem[];
+  // Flattened supplier properties returned by API
+  fournisseurNomEntreprise?: string;
+  fournisseurNom?: string;
+  fournisseurPrenom?: string;
+  fournisseurEmail?: string;
 }
 

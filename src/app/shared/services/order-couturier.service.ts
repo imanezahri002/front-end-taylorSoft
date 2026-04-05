@@ -70,7 +70,7 @@ export class OrderCoutourierService {
    */
   getByCouturierId(couturierId: number): Observable<CoutourierOrder[]> {
     return this.http.get<CoutourierOrder[]>(
-      `${this.apiUrl}/couturier/${couturierId}`
+      `${this.apiUrl}/coutourier/${couturierId}`
     );
   }
 
