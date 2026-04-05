@@ -1,0 +1,345 @@
+<app-dashboard-layout title="Mes Modèles">
+  <div class="min-h-screen bg-stone-50 p-4 md:p-10 font-sans">
+
+    <!-- Header -->
+    <div class="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <span class="text-rose-500 font-bold tracking-widest text-xs uppercase bg-rose-50 px-3 py-1 rounded-full">Créations</span>
+        <h1 class="text-4xl font-serif font-bold text-gray-900 mt-3 italic">Mes Modèles</h1>
+        <p class="text-gray-500 mt-2">Créez et gérez vos modèles de couture.</p>
+      </div>
+
+      <button (click)="openForm()" class="bg-rose-500 text-white px-8 py-4 rounded-2xl font-bold shadow-xl shadow-rose-200 hover:bg-rose-600 transition-all active:scale-95 flex items-center justify-center gap-3">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        Créer un Modèle
+      </button>
+    </div>
+
+    <!-- Models List -->
+    <div class="max-w-7xl mx-auto bg-white rounded-[3rem] shadow-sm border border-gray-100 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-stone-50/50 border-b border-gray-100">
+              <th class="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Nom</th>
+              <th class="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Tissu</th>
+              <th class="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Couleurs</th>
+              <th class="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Prix</th>
+              <th class="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Status</th>
+              <th class="px-10 py-6 text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-50">
+            @if (models.length === 0) {
+              <tr>
+                <td colspan="6" class="px-10 py-12 text-center">
+                  <div class="flex flex-col items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-stone-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-stone-400 font-medium">Aucun modèle pour le moment</p>
+                  </div>
+                </td>
+              </tr>
+            } @else {
+              @for (model of models; track model.id) {
+                <tr class="hover:bg-rose-50/20 transition-colors">
+                  <td class="px-10 py-6">
+                    <span class="text-sm font-semibold text-gray-900">{{ model.nom }}</span>
+                  </td>
+                  <td class="px-10 py-6">
+                    <span class="text-sm text-gray-600">{{ getTissuName(model.tissuId) }}</span>
+                  </td>
+                  <td class="px-10 py-6">
+                    <span class="bg-stone-100 px-3 py-1 rounded-full text-[11px] font-bold text-gray-600">
+                      {{ model.couleurs?.length || 0 }} Couleur(s)
+                    </span>
+                  </td>
+                  <td class="px-10 py-6">
+                    <span class="text-sm font-bold text-gray-900">
+                      {{ model.prix | number: '1.2-2' }}
+                      <span class="text-gray-400 font-normal">DH</span>
+                    </span>
+                  </td>
+                  <td class="px-10 py-6">
+                    <span class="text-xs font-bold px-3 py-1 rounded-full whitespace-nowrap" [ngClass]="{
+                      'bg-green-100 text-green-700': model.active,
+                      'bg-red-100 text-red-700': !model.active
+                    }">
+                      {{ model.active ? 'Actif' : 'Inactif' }}
+                    </span>
+                  </td>
+                  <td class="px-10 py-6">
+                    <div class="flex justify-end gap-2">
+                      <button (click)="viewModel(model)" class="p-2.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Voir les détails">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </button>
+                      <button (click)="deleteModel(model.id)" class="p-2.5 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all" title="Supprimer">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-4v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Create Model Form Modal -->
+    @if (showForm) {
+      <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white w-full max-w-2xl rounded-[3.5rem] shadow-2xl border border-white/20 flex flex-col my-auto relative">
+
+          <button type="button" (click)="closeForm()" class="absolute top-8 right-8 text-gray-400 hover:text-rose-500 transition-colors p-2 hover:bg-rose-50 rounded-full">✕</button>
+
+          <div class="p-10 pb-6">
+            <h2 class="text-3xl font-serif font-bold text-gray-900 italic">Créer un Modèle</h2>
+            <p class="text-gray-400 text-sm mt-2 font-medium">Remplissez les informations pour créer un nouveau modèle.</p>
+          </div>
+
+          @if (errorMessage) {
+            <div class="mx-10 mt-4 p-4 bg-red-50 border border-red-300 rounded-2xl">
+              <p class="text-red-700 font-bold text-sm">⚠️ {{ errorMessage }}</p>
+            </div>
+          }
+
+          @if (successMessage) {
+            <div class="mx-10 mt-4 p-4 bg-green-50 border border-green-300 rounded-2xl">
+              <p class="text-green-700 font-bold text-sm">✓ {{ successMessage }}</p>
+            </div>
+          }
+
+          <form [formGroup]="modelForm" (ngSubmit)="submitModel()" class="p-10 pt-0 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+
+            <!-- Nom -->
+            <div class="space-y-3">
+              <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Nom du Modèle *</label>
+              <input type="text" formControlName="nom" placeholder="Ex: Caftan Moderne"
+                     class="w-full p-4 bg-stone-50 border-2 border-transparent rounded-2xl outline-none focus:ring-4 ring-rose-500/10 focus:border-rose-500 transition-all font-bold text-gray-700">
+            </div>
+
+            <!-- Description -->
+            <div class="space-y-3">
+              <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Description *</label>
+              <textarea formControlName="description" placeholder="Décrivez votre modèle..." rows="3"
+                        class="w-full p-4 bg-stone-50 border-2 border-transparent rounded-2xl outline-none focus:ring-4 ring-rose-500/10 focus:border-rose-500 transition-all font-bold text-gray-700 resize-none"></textarea>
+            </div>
+
+            <!-- Grid: Prix, Tissu, Catégorie -->
+            <div class="grid grid-cols-3 gap-4">
+              <div class="space-y-3">
+                <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Prix (DH) *</label>
+                <input type="number" step="0.01" formControlName="prix" placeholder="0.00"
+                       class="w-full p-4 bg-stone-50 border-2 border-transparent rounded-2xl outline-none focus:ring-4 ring-rose-500/10 focus:border-rose-500 transition-all font-bold text-gray-700">
+              </div>
+
+              <div class="space-y-3">
+                <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Tissu *</label>
+                <select formControlName="tissuId" class="w-full p-4 bg-stone-50 border-2 border-transparent rounded-2xl outline-none focus:ring-4 ring-rose-500/10 focus:border-rose-500 transition-all appearance-none cursor-pointer font-bold text-gray-700">
+                  <option value="" disabled selected>Choisir...</option>
+                  @for (tissu of tissus; track tissu.id) {
+                    <option [value]="tissu.id">{{ tissu.nom }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="space-y-3">
+                <label class="block text-[11px] font-black text-gray-400 uppercase tracking-widest ml-1">Catégorie *</label>
+                <select formControlName="categorieId" class="w-full p-4 bg-stone-50 border-2 border-transparent rounded-2xl outline-none focus:ring-4 ring-rose-500/10 focus:border-rose-500 transition-all appearance-none cursor-pointer font-bold text-gray-700">
+                  <option value="" disabled selected>Choisir...</option>
+                  @for (category of categories; track category.id) {
+                    <option [value]="category.id">{{ category.nom }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!-- Couleurs et Photos -->
+            <div class="space-y-4">
+              <div class="flex justify-between items-center px-1">
+                <label class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Couleurs & Photos</label>
+                <button type="button" (click)="addColor()" class="text-rose-500 text-[11px] font-black uppercase tracking-tighter hover:bg-rose-50 px-3 py-1.5 rounded-xl transition-all border border-rose-100 shadow-sm flex items-center gap-1">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Ajouter Couleur
+                </button>
+              </div>
+
+              @for (colorGroup of couleurControls; let colorIndex = $index; track colorIndex) {
+                <div class="space-y-3 p-6 bg-stone-50 rounded-3xl border border-transparent hover:border-rose-200 transition-all" [formGroup]="colorGroup">
+
+                  <!-- Couleur -->
+                  <div>
+                    <label class="block text-[10px] font-bold text-stone-400 uppercase mb-2 ml-1">Couleur *</label>
+                    <select formControlName="couleurId" class="w-full p-4 bg-white border border-stone-100 rounded-xl outline-none focus:ring-2 ring-rose-500 text-sm font-bold text-gray-700 shadow-sm appearance-none">
+                      <option value="" disabled selected>Sélectionner...</option>
+                      @for (color of colors; track color.id) {
+                        <option [value]="color.id">{{ color.nom }}</option>
+                      }
+                    </select>
+                  </div>
+
+                  <!-- Photos -->
+                  <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                      <label class="text-[10px] font-bold text-stone-400 uppercase">Photos (1-4) *</label>
+                      <button type="button" (click)="addPhotoToColor(colorIndex)"
+                              [disabled]="getPhotoControls(colorIndex).length >= 4"
+                              class="text-[10px] font-bold text-rose-500 hover:text-rose-600 disabled:text-gray-300 disabled:cursor-not-allowed">
+                        + Ajouter Photo
+                      </button>
+                    </div>
+
+                    @for (photoGroup of getPhotoControls(colorIndex); let photoIndex = $index; track photoIndex) {
+                      <div class="p-4 bg-white rounded-xl border border-stone-100 space-y-3" [formGroup]="photoGroup">
+
+                        <!-- File input -->
+                        <div>
+                          <label class="block text-[10px] font-bold text-stone-400 uppercase mb-2 ml-1">Photo {{ photoIndex + 1 }} *</label>
+                          <input type="file" accept="image/*" (change)="onFileSelected($event, colorIndex)"
+                                 [id]="'file-' + colorIndex + '-' + photoIndex"
+                                 class="w-full p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm text-gray-600">
+                        </div>
+
+                        <!-- Principal -->
+                        <div class="flex items-center gap-3">
+                          <input type="checkbox" formControlName="principal" [id]="'principal-' + colorIndex + '-' + photoIndex"
+                                 class="w-4 h-4 rounded border-stone-300">
+                          <label [for]="'principal-' + colorIndex + '-' + photoIndex" class="text-sm text-gray-600 cursor-pointer">
+                            Photo principale
+                          </label>
+                        </div>
+
+                        <!-- Order -->
+                        <div>
+                          <label class="block text-[10px] font-bold text-stone-400 uppercase mb-2 ml-1">Ordre</label>
+                          <select formControlName="photo_order" class="w-full p-3 bg-stone-50 border border-stone-200 rounded-lg text-sm font-bold text-gray-700">
+                            <option value="PREMIERE">Première</option>
+                            <option value="DEUXIEME">Deuxième</option>
+                            <option value="TROISIEME">Troisième</option>
+                            <option value="QUATRIEME">Quatrième</option>
+                          </select>
+                        </div>
+
+                        <!-- Delete photo button -->
+                        @if (getPhotosArray(colorIndex).length > 1) {
+                          <button type="button" (click)="removePhotoFromColor(colorIndex, photoIndex)"
+                                  class="text-sm text-red-500 hover:text-red-700 font-bold">
+                            Supprimer cette photo
+                          </button>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Delete color button -->
+                  @if (couleurs.length > 1) {
+                    <button type="button" (click)="removeColor(colorIndex)"
+                            class="text-sm text-red-500 hover:text-red-700 font-bold">
+                      Supprimer cette couleur
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Submit buttons -->
+            <div class="pt-6 border-t border-gray-100 flex gap-4">
+              <button type="button" (click)="closeForm()" class="flex-1 py-4 bg-stone-100 text-stone-600 rounded-2xl font-bold hover:bg-stone-200 transition-all">
+                Annuler
+              </button>
+              <button type="submit" [disabled]="loading" class="flex-[2] py-4 bg-rose-500 text-white rounded-2xl font-bold text-lg hover:bg-rose-600 shadow-2xl shadow-rose-200 transition-all active:scale-95 disabled:opacity-50">
+                {{ loading ? 'Création...' : 'Créer le Modèle' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+
+    <!-- Model Details Modal -->
+    @if (showDetailsModal && selectedModel) {
+      <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-[200] flex items-center justify-center p-4 overflow-y-auto font-sans">
+        <div class="bg-white w-full max-w-2xl rounded-3xl shadow-lg border border-gray-200 flex flex-col relative">
+
+          <div class="p-6 pb-4 border-b border-gray-100 flex justify-between items-start gap-4">
+            <div>
+              <h2 class="text-2xl font-bold text-gray-900">{{ selectedModel.nom }}</h2>
+              <p class="text-sm text-gray-500 mt-1">{{ selectedModel.description }}</p>
+            </div>
+            <button (click)="closeModelDetails()" class="text-gray-400 hover:text-gray-600 transition-colors p-1.5 hover:bg-gray-50 rounded-lg flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+
+            <!-- Infos générales -->
+            <div class="grid grid-cols-3 gap-4">
+              <div class="bg-stone-50 p-4 rounded-lg">
+                <span class="text-xs text-gray-500 block font-medium mb-1">Tissu</span>
+                <span class="text-sm font-bold text-gray-900">{{ getTissuName(selectedModel.tissuId) }}</span>
+              </div>
+              <div class="bg-stone-50 p-4 rounded-lg">
+                <span class="text-xs text-gray-500 block font-medium mb-1">Prix</span>
+                <span class="text-sm font-bold text-rose-600">{{ selectedModel.prix | number: '1.2-2' }} DH</span>
+              </div>
+              <div class="bg-stone-50 p-4 rounded-lg">
+                <span class="text-xs text-gray-500 block font-medium mb-1">Status</span>
+                <span class="text-xs font-bold px-2 py-1 rounded" [ngClass]="{
+                  'bg-green-100 text-green-700': selectedModel.active,
+                  'bg-red-100 text-red-700': !selectedModel.active
+                }">
+                  {{ selectedModel.active ? 'Actif' : 'Inactif' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Couleurs et photos -->
+            <div>
+              <h3 class="font-bold text-gray-900 mb-4">Couleurs & Photos</h3>
+              <div class="space-y-4">
+                @for (modelColor of selectedModel.couleurs; track modelColor.id) {
+                  <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-800 mb-3">{{ modelColor.couleur?.nom || 'Couleur' }}</h4>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      @for (photo of modelColor.photos; track photo.id) {
+                        <div class="relative group">
+                          <img [src]="photo.photoUrl" [alt]="modelColor.couleur?.nom || 'Photo'"
+                               class="w-full h-40 object-cover rounded-lg border border-gray-200">
+                          @if (photo.principal) {
+                            <div class="absolute top-2 right-2 bg-rose-500 text-white px-2 py-1 rounded text-[10px] font-bold">Principal</div>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="p-6 border-t border-gray-100">
+            <button type="button" (click)="closeModelDetails()" class="w-full py-3 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-all text-sm">
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div>
+</app-dashboard-layout>

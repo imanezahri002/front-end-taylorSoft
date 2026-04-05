@@ -65,6 +65,12 @@ export const routes: Routes = [
     data: { roles: ['COUTURIER'] }
   },
   {
+    path: 'couturier/models',
+    loadComponent: () => import('../app/pages/couturier/models/models.component').then(m => m.ModelsComponent),
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['COUTURIER'] }
+  },
+  {
     path: 'dashboard/couleurs',
     component: ColorComponent,
     canActivate: [authGuard]

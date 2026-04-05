@@ -75,7 +75,7 @@ export class DashboardLayoutComponent implements OnInit {
         { label: 'Gestion Tissus', route: '/dashboard/tissus', iconSvg: tissuesSvg },
         { label: 'Types de Tissu', route: '/dashboard/type-tissus', iconSvg: tissuesSvg },
         { label: 'Commandes Tissu', route: '/dashboard/order-couturier', iconSvg: ordersSvg },
-        { label: 'Créations', route: '/dashboard/models', iconSvg: categoriesSvg },
+        { label: 'Mes Modèles', route: '/couturier/models', iconSvg: categoriesSvg },
         { label: 'Planning', route: '/dashboard/planning', iconSvg: tissuesSvg }
       ];
     }
