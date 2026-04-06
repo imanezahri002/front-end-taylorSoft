@@ -50,7 +50,7 @@
                     <span class="text-sm font-semibold text-gray-900">{{ model.nom }}</span>
                   </td>
                   <td class="px-10 py-6">
-                    <span class="text-sm text-gray-600">{{ getTissuName(model.tissuId) }}</span>
+                    <span class="text-sm text-gray-600">{{ model.tissu?.nom || 'Tissu inconnu' }}</span>
                   </td>
                   <td class="px-10 py-6">
                     <span class="bg-stone-100 px-3 py-1 rounded-full text-[11px] font-bold text-gray-600">
@@ -290,7 +290,7 @@
             <div class="grid grid-cols-3 gap-4">
               <div class="bg-stone-50 p-4 rounded-lg">
                 <span class="text-xs text-gray-500 block font-medium mb-1">Tissu</span>
-                <span class="text-sm font-bold text-gray-900">{{ getTissuName(selectedModel.tissuId) }}</span>
+                <span class="text-sm font-bold text-gray-900">{{ selectedModel.tissu?.nom || 'Tissu inconnu' }}</span>
               </div>
               <div class="bg-stone-50 p-4 rounded-lg">
                 <span class="text-xs text-gray-500 block font-medium mb-1">Prix</span>

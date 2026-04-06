@@ -14,7 +14,7 @@ import {
   Validators,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { Subject } from 'rxjs';
+import { Subject, combineLatest } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ModelService } from '../../../shared/services/model.service';
 import { CategoryService } from '../../../shared/services/category.service';
@@ -89,10 +89,27 @@ export class ModelsComponent implements OnInit, OnDestroy {
       this.currentUserId = userId;
     }
 
-    this.loadCategories();
-    this.loadTissus();
-    this.loadColors();
-    this.loadModels();
+    // Load categories, tissues, and colors first, then load models
+    combineLatest([
+      this.categoryService.getAll(),
+      this.tissuService.getAll(),
+      this.colorService.getAll(),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ([categories, tissus, colors]) => {
+          this.categories = categories;
+          this.tissus = tissus;
+          this.colors = colors;
+          this.cdr.markForCheck();
+          // Load models after all data is ready
+          this.loadModels();
+        },
+        error: () => {
+          this.errorMessage = 'Erreur lors du chargement des données';
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   ngOnDestroy(): void {
@@ -427,8 +444,4 @@ export class ModelsComponent implements OnInit, OnDestroy {
   /**
    * Get tissu by ID
    */
-  getTissuName(tissuId: number | undefined): string {
-    if (!tissuId) return 'Tissu inconnu';
-    return this.tissus.find((t) => t.id === tissuId)?.nom || 'Tissu inconnu';
-  }
 }
