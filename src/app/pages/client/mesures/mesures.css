@@ -1,0 +1,26 @@
+/* Mesures Component Styles */
+
+:host {
+  display: block;
+}
+
+/* Optional: Add any component-specific animations or styles here */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.bg-white {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Smooth input transitions */
+input:focus {
+  transition: all 0.2s ease-in-out;
+}

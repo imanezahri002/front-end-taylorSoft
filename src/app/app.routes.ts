@@ -12,6 +12,7 @@ import { TissuTypeComponent } from '../app/pages/admin/tissu-type/tissu-type';
 import { ColorComponent } from '../app/pages/admin/color/color';
 import { Tissus } from '../app/pages/admin/tissus/tissus';
 import { OrderCouturier } from '../app/pages/couturier/order-couturier/order-couturier';
+import { MesuresComponent } from '../app/pages/client/mesures/mesures';
 
 
 export const routes: Routes = [
@@ -74,6 +75,12 @@ export const routes: Routes = [
     path: 'dashboard/couleurs',
     component: ColorComponent,
     canActivate: [authGuard]
+  },
+  {
+    path: 'client/measurements',
+    component: MesuresComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['CLIENT'] }
   },
   {
     path: 'unauthorized',
